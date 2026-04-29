@@ -744,7 +744,7 @@ body.role-visitante .dm-tab[data-dmt="edit"]{display:none!important;}
 
   <div class="cargos-container">
 
-    <!-- ══ LIDERANÇA ══════════════════════════════════════════ -->
+    <!-- ══ GESTÃO ══════════════════════════════════════════ -->
     <div class="cargo-section" data-cs="lideranca">
       <div class="cargo-section-label">Gestão</div>
 
@@ -2727,7 +2727,337 @@ function openPrintWindow(title, bodyHtml, orientation='portrait'){
     .label{font-size:8px;text-transform:uppercase;color:#6B3A1F;letter-spacing:.08em;display:block;margin-bottom:2px;} .barion-section{padding:8px 10px;border-bottom:1px solid #D9CDBA;break-inside:avoid;} .sec-title{background:#4B260C;color:white;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:5px 8px;margin:0 0 6px 0;font-weight:700;} .mission{font-size:11px;line-height:1.35;}
     table{width:100%;border-collapse:collapse;font-size:10px;} th{background:#C59A5B;color:#211003;text-transform:uppercase;font-size:9px;} th,td{border:1px solid #4B260C;padding:4px 5px;vertical-align:top;} ul{margin:0;padding-left:16px;font-size:10px;line-height:1.35;} .small{font-size:9px;color:#6B3A1F;}
     .cargo-print .cargo-head{background:#4B260C!important;color:white!important;padding:10px 12px;} .cargo-print .cargo-title{color:white!important;font-family:Arial,sans-serif!important;font-size:18px!important;margin:0 0 4px 0;} .cargo-print .cargo-tag,.cargo-print .cargo-report{color:#F7F2EB!important;} .cargo-print .cargo-body{display:block!important;padding:10px 12px;} .cargo-actions{display:none!important;} .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;} .ficha-label{font-weight:bold;color:#4B260C;text-transform:uppercase;font-size:9px;border-bottom:1px solid #C59A5B;margin-bottom:4px;} .cargo-list,.cargo-list-compact{margin:0;padding-left:15px;} .cargo-list li,.cargo-list-compact li{font-size:10px;margin-bottom:2px;}
-  </style></head><body>${bodyHtml}</body></html>`); w.document.close(); setTimeout(()=>{w.focus();w.print();},300);
+  </style></head><body>${bodyHtml}
+
+<!-- PATCH FINAL ANDERSON · UX GESTÃO / ORGANOGRAMA / CARGOS / A4 -->
+<style id="anderson-final-ux-patch">
+  /* Limpeza visual solicitada */
+  .hmeta{display:none!important;}
+  .supabase-panel{display:none!important;}
+  #org-editor-panel{display:none!important;}
+  button[onclick*="toggleOrgEditor"],
+  button[onclick*="saveOrgOnline"],
+  button[onclick*="loadOrgOnline"],
+  button[onclick*="saveCargoConfigOnline"],
+  button[onclick*="loadCargoConfigOnline"],
+  button[onclick*="expandAllCargoCards"]{display:none!important;}
+
+  /* Usuário no topo, dentro da área marrom */
+  .user-session-bar{
+    position:fixed!important;top:14px;right:22px;z-index:9999;
+    display:none;background:rgba(247,242,235,.12)!important;
+    border:1px solid rgba(247,242,235,.28)!important;border-radius:8px;
+    padding:8px 10px!important;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.12);
+  }
+  body.authenticated .user-session-bar{display:flex!important;}
+  .user-session-info{color:#F7F2EB!important;font-size:9px!important;}
+  .user-session-info strong{color:#fff!important;}
+  .logout-btn{background:#F7F2EB!important;color:#3D1F0D!important;border:0!important;border-radius:5px;padding:6px 10px;cursor:pointer;}
+
+  /* Campo nome impressão diário */
+  .print-name-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+  .print-name-row label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);}
+  .print-name-row input{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--cream-dark);background:var(--cream);border-radius:5px;padding:8px 10px;width:100%;}
+
+  /* Edição direta do organograma */
+  .node{position:relative;}
+  .org-card-edit{display:none;position:absolute;right:6px;top:6px;z-index:5;background:rgba(255,255,255,.92);border:1px solid rgba(61,31,13,.18);border-radius:4px;font-size:11px;padding:2px 6px;color:#3D1F0D;cursor:pointer;}
+  body.role-supervisao .node:hover .org-card-edit{display:block;}
+  .anderson-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:50000;display:none;align-items:center;justify-content:center;padding:18px;}
+  .anderson-modal-backdrop.open{display:flex;}
+  .anderson-modal{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#F7F2EB;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid #D9CDBA;}
+  .anderson-modal-head{background:#3D1F0D;color:#F7F2EB;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .anderson-modal-title{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.1;}
+  .anderson-modal-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C4956A;margin-bottom:4px;}
+  .anderson-modal-body{padding:18px 20px;}
+  .am-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .am-field{display:flex;flex-direction:column;gap:5px;}
+  .am-field.full{grid-column:1/-1;}
+  .am-field label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7A6550;}
+  .am-field input,.am-field select,.am-field textarea{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid #D9CDBA;border-radius:6px;background:white;padding:9px 10px;resize:vertical;}
+  .am-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #EDE5D8;background:white;position:sticky;bottom:0;}
+  .am-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 14px;border-radius:6px;border:1px solid #D9CDBA;background:white;color:#3D1F0D;cursor:pointer;}
+  .am-btn.primary{background:#3D1F0D;color:#fff;border-color:#3D1F0D;}
+  .am-btn.danger{background:#fff;color:#B84C1E;border-color:#B84C1E;}
+
+  .list-editor{display:flex;flex-direction:column;gap:6px;}
+  .list-editor-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;}
+  .list-editor-row textarea,.list-editor-row input{width:100%;font-size:12px;border:1px solid #D9CDBA;border-radius:5px;padding:7px 8px;background:white;}
+  .mini-delete{border:1px solid #D9CDBA;background:#fff;border-radius:5px;color:#B84C1E;padding:7px 9px;cursor:pointer;}
+  .mini-add{align-self:flex-start;margin-top:4px;border:1px solid #D9CDBA;background:#F7F2EB;border-radius:5px;color:#3D1F0D;padding:6px 10px;cursor:pointer;font-size:12px;}
+
+  /* Cards de cargo mais limpos */
+  .cargo-actions{gap:6px!important;}
+  .cargo-action-btn[data-act="edit"],.cargo-action-btn[data-act="print"]{font-size:11px!important;padding:5px 9px!important;}
+  .cargo-card.editing .cargo-head,.cargo-card.editing .cargo-title,.cargo-card.editing .cargo-report{outline:none!important;color:inherit!important;}
+
+  @media(max-width:720px){.am-grid{grid-template-columns:1fr}.print-name-row{grid-template-columns:1fr}.user-session-bar{position:static!important;margin:0;border-radius:0;width:100%;justify-content:space-between}}
+</style>
+
+<script id="anderson-final-ux-patch-js">
+(function(){
+  const NEW_ORG_CONFIG_ID = 'org-config-v4-default-restored';
+  const NEW_CARGO_CONFIG_ID = 'cargo-config-v4-structured';
+  let defaultOrgHtml = null;
+  let activeOrgNode = null;
+  let activeCargoCard = null;
+
+  function esc(s){ return (s??'').toString().replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function client(){ try{return getSupabaseClient ? getSupabaseClient() : null;}catch(e){return null;} }
+  function isSupervisor(){ try{return typeof canEditAll==='function' && canEditAll();}catch(e){return false;} }
+
+  function removeUnwantedVisuals(){
+    document.querySelectorAll('button').forEach(btn=>{
+      const t=(btn.textContent||'').trim().toLowerCase();
+      const oc=btn.getAttribute('onclick')||'';
+      if(t.includes('expandir/recolher') || t.includes('salvar descrições') || t.includes('carregar descrições') || t.includes('salvar organograma') || t.includes('carregar online') || t.includes('editar organograma') || oc.includes('toggleOrgEditor') || oc.includes('saveCargoConfigOnline') || oc.includes('loadCargoConfigOnline') || oc.includes('saveOrgOnline') || oc.includes('loadOrgOnline')) btn.style.display='none';
+    });
+    document.querySelectorAll('.supabase-panel,#org-editor-panel,.hmeta').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.cargo-filter[data-cf="lideranca"],.filter-btn[data-filter="lideranca"]').forEach(el=>{el.textContent='Gestão'});
+    document.querySelectorAll('.cargo-section-label,.dlc-area-tag,.cargo-tag,.node-role,.ctrl-label').forEach(el=>{ if((el.textContent||'').includes('Liderança')) el.textContent=el.textContent.replaceAll('Liderança','Gestão'); });
+  }
+
+  function addOrgAddButton(){
+    const controls=document.querySelector('#mt-organograma .controls');
+    if(!controls || controls.querySelector('#btn-add-org-direct')) return;
+    const btn=document.createElement('button');
+    btn.className='filter-btn'; btn.id='btn-add-org-direct'; btn.type='button'; btn.textContent='Adicionar posição';
+    btn.onclick=()=>openOrgEditor(null,true);
+    const ref=controls.querySelector('#one-page-btn') || controls.lastElementChild;
+    controls.insertBefore(btn, ref);
+  }
+
+  function ensureOrgIds(){
+    document.querySelectorAll('#mt-organograma .node').forEach((n,i)=>{
+      if(!n.dataset.orgId){
+        const nm=(n.dataset.name||n.querySelector('.node-name')?.textContent||'posicao').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        n.dataset.orgId = (nm || 'posicao')+'-'+i;
+      }
+    });
+  }
+
+  function addEditBadges(){
+    ensureOrgIds();
+    document.querySelectorAll('#mt-organograma .node').forEach(n=>{
+      if(!n.querySelector('.org-card-edit')){
+        const b=document.createElement('button'); b.type='button'; b.className='org-card-edit'; b.textContent='Editar';
+        b.onclick=(e)=>{e.stopPropagation(); openOrgEditor(n,false);};
+        n.appendChild(b);
+      }
+      n.ondblclick=(e)=>{ if(isSupervisor()){ e.preventDefault(); e.stopPropagation(); openOrgEditor(n,false);} };
+    });
+  }
+
+  function orgModal(){
+    let wrap=document.getElementById('org-direct-modal');
+    if(wrap) return wrap;
+    wrap=document.createElement('div'); wrap.id='org-direct-modal'; wrap.className='anderson-modal-backdrop';
+    wrap.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Organograma</div><div class="anderson-modal-title" id="org-modal-title">Editar posição</div></div><button class="am-btn" type="button" id="org-modal-close">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Nome</label><input id="org-direct-name"></div><div class="am-field"><label>Função / cargo</label><input id="org-direct-role"></div><div class="am-field"><label>Reporta a</label><input id="org-direct-reports"></div><div class="am-field"><label>Área visual</label><select id="org-direct-area"><option value="pcp">PCP</option><option value="almox">Almoxarifado</option><option value="expedicao">Expedição</option><option value="lideranca">Gestão</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Turno / classe</label><select id="org-direct-class"><option value="adm">ADM</option><option value="turno-1">1º Turno</option><option value="turno-2">2º Turno</option><option value="turno-3">3º Turno</option><option value="leadership">Gestão superior</option><option value="supervisor">Supervisor</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Filtros onde aparece</label><input id="org-direct-group" placeholder="ex.: pcp almox expedicao"></div><div class="am-field full"><label>Descrição curta / complemento</label><input id="org-direct-meta"></div></div></div><div class="am-actions"><button class="am-btn danger" type="button" id="org-direct-delete">Excluir posição</button><button class="am-btn" type="button" id="org-direct-cancel">Cancelar</button><button class="am-btn primary" type="button" id="org-direct-save">Concluir</button></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#org-modal-close').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-cancel').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-save').onclick=saveOrgDirect;
+    wrap.querySelector('#org-direct-delete').onclick=deleteOrgDirect;
+    return wrap;
+  }
+
+  function openOrgEditor(node,isNew){
+    if(!isSupervisor()){ alert('Seu perfil não permite editar o organograma.'); return; }
+    activeOrgNode=node;
+    const m=orgModal();
+    m.querySelector('#org-modal-title').textContent=isNew?'Adicionar posição':'Editar posição';
+    m.querySelector('#org-direct-delete').style.display=isNew?'none':'';
+    m.querySelector('#org-direct-name').value=isNew?'':(node.dataset.name||node.querySelector('.node-name')?.textContent||'');
+    m.querySelector('#org-direct-role').value=isNew?'':(node.dataset.role||node.querySelector('.node-role')?.textContent||'');
+    m.querySelector('#org-direct-reports').value=isNew?'':(node.dataset.reports||'');
+    m.querySelector('#org-direct-meta').value=isNew?'':(node.querySelector('.node-meta')?.textContent||node.dataset.area||'');
+    m.querySelector('#org-direct-group').value=isNew?'':(node.dataset.group||'');
+    let area='pcp';
+    if(node){ if(node.classList.contains('almox')) area='almox'; else if(node.classList.contains('expedicao')) area='expedicao'; else if(node.classList.contains('leadership')||node.classList.contains('supervisor')) area='lideranca'; else if(node.classList.contains('bridge')) area='bridge'; }
+    m.querySelector('#org-direct-area').value=area;
+    let cls='adm';
+    if(node){ ['turno-1','turno-2','turno-3','leadership','supervisor','bridge','adm'].forEach(c=>{if(node.classList.contains(c)) cls=c;}); }
+    m.querySelector('#org-direct-class').value=cls;
+    m.classList.add('open');
+  }
+
+  function placeOrgNode(node,area){
+    if(area==='lideranca' || area==='bridge') return;
+    const col=document.querySelector(`.area-column[data-area-column="${area}"] .sub-column`);
+    if(col && node.parentNode!==col) col.appendChild(node);
+  }
+
+  function saveOrgDirect(){
+    const m=orgModal();
+    const name=m.querySelector('#org-direct-name').value.trim()||'Novo colaborador';
+    const role=m.querySelector('#org-direct-role').value.trim()||'Nova função';
+    const reports=m.querySelector('#org-direct-reports').value.trim();
+    const meta=m.querySelector('#org-direct-meta').value.trim();
+    const group=m.querySelector('#org-direct-group').value.trim();
+    const area=m.querySelector('#org-direct-area').value;
+    const cls=m.querySelector('#org-direct-class').value;
+    let node=activeOrgNode;
+    if(!node){
+      const col=document.querySelector(`.area-column[data-area-column="${area==='bridge'?'pcp':area==='lideranca'?'pcp':area}"] .sub-column`) || document.querySelector('.area-column .sub-column');
+      node=document.createElement('div'); col.appendChild(node);
+      node.dataset.orgId='novo-'+Date.now();
+    }
+    node.className='node';
+    if(area==='almox') node.classList.add('almox'); else if(area==='expedicao') node.classList.add('expedicao'); else if(area==='bridge') node.classList.add('bridge'); else if(area==='lideranca') node.classList.add(cls==='leadership'?'leadership':'supervisor'); else node.classList.add('pcp');
+    if(!['leadership','supervisor','bridge'].includes(cls)) node.classList.add(cls);
+    node.dataset.name=name; node.dataset.role=role; node.dataset.reports=reports; node.dataset.area=meta; node.dataset.group=group || (area==='lideranca'?'lideranca pcp almox expedicao':area==='bridge'?'pcp almox':area);
+    node.innerHTML=`<div class="node-role">${esc(role)}</div><div class="node-name">${esc(name)}</div>${meta?`<div class="node-meta">${esc(meta)}</div>`:''}`;
+    placeOrgNode(node,area);
+    addEditBadges();
+    m.classList.remove('open');
+    saveOrgOnline({silent:true});
+  }
+  function deleteOrgDirect(){
+    if(!activeOrgNode) return; if(!confirm('Excluir esta posição?')) return; activeOrgNode.remove(); activeOrgNode=null; orgModal().classList.remove('open'); saveOrgOnline({silent:true});
+  }
+
+  function cleanOrgHtml(){
+    const clone=document.querySelector('#mt-organograma .org-container').cloneNode(true);
+    clone.querySelectorAll('.org-card-edit,.hidden').forEach(x=>x.remove());
+    clone.querySelectorAll('[style]').forEach(x=>x.removeAttribute('style'));
+    return clone.innerHTML;
+  }
+  window.saveOrgOnline = saveOrgOnline = async function(options={}){
+    if(!isSupervisor()) return;
+    const content={html:cleanOrgHtml()}; localStorage.setItem('org-config-v4',JSON.stringify(content));
+    const c=client(); if(!c) return;
+    await c.from(SB_TABLE).upsert({data_ref:CONFIG_DATE,cargo_id:NEW_ORG_CONFIG_ID,area:'config',area_label:'Configuração',cargo_titulo:'Organograma',nome_pessoa:(window.authProfile?.nome||''),conteudo:content,checklist_estado:[],atualizado_por:(window.authProfile?.nome||'não informado'),atualizado_em:new Date().toISOString()},{onConflict:'data_ref,cargo_id'});
+  };
+  window.loadOrgOnline = loadOrgOnline = async function(options={}){
+    // Usa novo ID para descartar versão antiga editada acidentalmente e restaurar Alexandre/Edimara.
+    const c=client();
+    if(c){
+      const {data}=await c.from(SB_TABLE).select('conteudo').eq('data_ref',CONFIG_DATE).eq('cargo_id',NEW_ORG_CONFIG_ID).maybeSingle();
+      if(data?.conteudo?.html){
+        const oc=document.querySelector('#mt-organograma .org-container'); oc.innerHTML=data.conteudo.html; addEditBadges(); return;
+      }
+    }
+    if(defaultOrgHtml){ document.querySelector('#mt-organograma .org-container').innerHTML=defaultOrgHtml; addEditBadges(); }
+  };
+
+  function ensureDiaryPrintName(){
+    const body=document.querySelector('#diario-modal .diario-body');
+    const toolbar=document.querySelector('#diario-modal .dm-toolbar');
+    if(!body || !toolbar || document.getElementById('diario-print-name')) return;
+    const row=document.createElement('div'); row.className='print-name-row';
+    row.innerHTML='<label>Nome para impressão A4</label><input id="diario-print-name" placeholder="Digite o nome que deve sair no PDF A4">';
+    toolbar.parentNode.insertBefore(row, toolbar.nextSibling);
+    const input=row.querySelector('input');
+    input.value=localStorage.getItem('diario-print-name') || window.authProfile?.nome || '';
+    input.addEventListener('input',()=>localStorage.setItem('diario-print-name',input.value));
+  }
+
+  function getPrintName(){ return (document.getElementById('diario-print-name')?.value || localStorage.getItem('diario-print-name') || window.authProfile?.nome || '').trim(); }
+
+  window.printDiarioA4=function(){
+    if(!currentData) return; if(typeof renderView==='function') renderView();
+    const cargo=getCargoLabel(); const nome=getPrintName();
+    const dailyRows=(currentData.daily||[]).slice(0,7).map(r=>'<tr><td style="width:92px">'+esc(r.time||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const weeklyRows=(currentData.weekly||[]).slice(0,4).map(r=>'<tr><td style="width:130px">'+esc(r.freq||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const checklist=(currentData.checklist||[]).slice(0,8).map(x=>'<div class="check-item"><span class="box"></span><span>'+esc(x)+'</span></div>').join('')||'<div class="check-item"><span class="box"></span><span>Nenhum checklist cadastrado.</span></div>';
+    const html='<div class="barion-page one-page-print">'+printHeader('Diário de Bordo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Nome</span><div class="value">'+esc(nome||'________________________')+'</div></div><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(cargo.title||'—')+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(cargo.areaLabel||'—')+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(currentData.mission||'—')+'</div>')+sectionBlock('Atividades Diárias','<table><thead><tr><th>Horário</th><th>Atividade</th><th>Descrição / Padrão esperado</th></tr></thead><tbody>'+dailyRows+'</tbody></table>')+sectionBlock('Atividades Semanais / Rotinas Periódicas','<table><thead><tr><th>Frequência</th><th>Atividade</th><th>Descrição / Entrega esperada</th></tr></thead><tbody>'+weeklyRows+'</tbody></table>')+sectionBlock('Checklist de Acompanhamento','<div class="check-grid">'+checklist+'</div>')+sectionBlock('Observações / Orientações do Gestor','<div class="section-content obs-box">'+esc(currentData.obs||'')+'</div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Diário A4 Barion',html,'portrait');
+  };
+
+  // Editor estruturado de descrições de cargo
+  function cargoModal(){
+    let w=document.getElementById('cargo-structured-modal'); if(w)return w;
+    w=document.createElement('div'); w.id='cargo-structured-modal'; w.className='anderson-modal-backdrop';
+    w.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Descrição de cargo</div><div class="anderson-modal-title">Editar descrição</div></div><button class="am-btn" id="cargo-modal-close" type="button">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Cargo / função</label><input id="cargo-ed-title"></div><div class="am-field"><label>Subordinação / setor</label><input id="cargo-ed-report"></div><div class="am-field full"><label>Missão / propósito</label><textarea id="cargo-ed-mission" rows="3"></textarea></div><div class="am-field full"><label>Responsabilidades principais</label><div class="list-editor" id="cargo-ed-resp"></div><button class="mini-add" data-list="cargo-ed-resp" type="button">+ Adicionar responsabilidade</button></div><div class="am-field"><label>Perfil requerido</label><textarea id="cargo-ed-profile" rows="4"></textarea></div><div class="am-field"><label>Próximo nível</label><textarea id="cargo-ed-next" rows="4"></textarea></div><div class="am-field"><label>Habilidades técnicas</label><div class="list-editor" id="cargo-ed-tech"></div><button class="mini-add" data-list="cargo-ed-tech" type="button">+ Adicionar habilidade</button></div><div class="am-field"><label>Competências comportamentais</label><div class="list-editor" id="cargo-ed-comp"></div><button class="mini-add" data-list="cargo-ed-comp" type="button">+ Adicionar competência</button></div><div class="am-field full"><label>Treinamentos obrigatórios</label><div class="list-editor" id="cargo-ed-train"></div><button class="mini-add" data-list="cargo-ed-train" type="button">+ Adicionar treinamento</button></div></div></div><div class="am-actions"><button class="am-btn" type="button" id="cargo-ed-cancel">Cancelar</button><button class="am-btn primary" type="button" id="cargo-ed-save">Concluir</button></div></div>`;
+    document.body.appendChild(w);
+    w.querySelector('#cargo-modal-close').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-cancel').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-save').onclick=saveCargoStructured;
+    w.querySelectorAll('.mini-add').forEach(b=>b.onclick=()=>addListRow(b.dataset.list,''));
+    return w;
+  }
+  function addListRow(id,val){ const box=document.getElementById(id); if(!box)return; const row=document.createElement('div'); row.className='list-editor-row'; row.innerHTML='<textarea rows="2">'+esc(val||'')+'</textarea><button class="mini-delete" type="button">Excluir</button>'; row.querySelector('button').onclick=()=>row.remove(); box.appendChild(row); }
+  function setList(id,items){ const box=document.getElementById(id); if(!box)return; box.innerHTML=''; (items&&items.length?items:['']).forEach(x=>addListRow(id,x)); }
+  function getList(id){ return [...(document.getElementById(id)?.querySelectorAll('textarea')||[])].map(x=>x.value.trim()).filter(Boolean); }
+  function openCargoStructured(card){
+    if(!isSupervisor()){alert('Seu perfil não permite editar descrições de cargo.');return;}
+    activeCargoCard=card; const w=cargoModal();
+    w.querySelector('#cargo-ed-title').value=card.querySelector('.cargo-title')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-report').value=card.querySelector('.cargo-report')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-mission').value=card.querySelector('.cargo-mission')?.textContent.trim()||'';
+    setList('cargo-ed-resp',[...card.querySelectorAll('.cargo-list')][0]?[...[...card.querySelectorAll('.cargo-list')][0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    const fichaTexts=[...card.querySelectorAll('.ficha-text')].map(x=>x.textContent.trim());
+    w.querySelector('#cargo-ed-profile').value=fichaTexts[0]||''; w.querySelector('#cargo-ed-next').value=fichaTexts[1]||'';
+    const compactLists=[...card.querySelectorAll('.cargo-list-compact')];
+    setList('cargo-ed-tech',compactLists[0]?[...compactLists[0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-comp',compactLists[1]?[...compactLists[1].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-train',[...card.querySelectorAll('.ficha-chip')].map(x=>x.textContent.trim()));
+    w.classList.add('open');
+  }
+  function saveCargoStructured(){
+    const card=activeCargoCard; if(!card)return;
+    card.querySelector('.cargo-title').textContent=document.getElementById('cargo-ed-title').value.trim()||'Descrição de Cargo';
+    card.querySelector('.cargo-report').textContent=document.getElementById('cargo-ed-report').value.trim();
+    card.querySelector('.cargo-mission').textContent=document.getElementById('cargo-ed-mission').value.trim();
+    const lists=[...card.querySelectorAll('.cargo-list')]; if(lists[0]) lists[0].innerHTML=getList('cargo-ed-resp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const texts=[...card.querySelectorAll('.ficha-text')]; if(texts[0]) texts[0].textContent=document.getElementById('cargo-ed-profile').value.trim(); if(texts[1]) texts[1].textContent=document.getElementById('cargo-ed-next').value.trim();
+    const cl=[...card.querySelectorAll('.cargo-list-compact')]; if(cl[0]) cl[0].innerHTML=getList('cargo-ed-tech').map(x=>'<li>'+esc(x)+'</li>').join(''); if(cl[1]) cl[1].innerHTML=getList('cargo-ed-comp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const chips=card.querySelector('.ficha-chips'); if(chips) chips.innerHTML=getList('cargo-ed-train').map(x=>'<span class="ficha-chip">'+esc(x)+'</span>').join('');
+    document.getElementById('cargo-structured-modal').classList.remove('open');
+    saveCargoConfigOnline({silent:true});
+  }
+
+  const oldInit = window.initCargoCards || initCargoCards;
+  window.initCargoCards = initCargoCards = function(){
+    if(typeof oldInit==='function') oldInit();
+    document.querySelectorAll('.cargo-card').forEach((card,idx)=>{
+      if(!card.dataset.cargoEditId) card.dataset.cargoEditId='cargo-'+idx;
+      const head=card.querySelector('.cargo-head'); if(!head)return;
+      let actions=head.querySelector('.cargo-actions');
+      if(!actions){actions=document.createElement('div');actions.className='cargo-actions';head.appendChild(actions);} 
+      actions.innerHTML='<button class="cargo-action-btn" data-act="edit" type="button">Editar</button><button class="cargo-action-btn" data-act="print" type="button">Imprimir A4</button>';
+      actions.querySelector('[data-act="edit"]').onclick=(e)=>{e.stopPropagation();openCargoStructured(card);};
+      actions.querySelector('[data-act="print"]').onclick=(e)=>{e.stopPropagation();printCargoCard(card);};
+      if(!isSupervisor()) actions.querySelector('[data-act="edit"]').style.display='none';
+    });
+  };
+
+  // Imprimir descrição em 1 página, no mesmo padrão do diário
+  window.printCargoCard=function(card){
+    const d=extractCargoPrintData(card); const area=(d.sub.match(/Setor:\s*([^·]+)/i)?.[1]||'PCP / Logística Industrial').trim();
+    const mainRows=d.main.slice(0,8).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const profile=d.ficha.slice(0,2).map(x=>'<b>'+esc(x.label)+':</b> '+esc(x.text)).join('<br>')||'—';
+    const skillList=d.compact.slice(0,10).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const train=d.chips.slice(0,12).map(x=>'<span style="display:inline-block;border:1px solid #D9CDBA;padding:3px 6px;margin:2px 3px 2px 0;font-size:8.5px">'+esc(x)+'</span>').join('')||'—';
+    const html='<div class="barion-page one-page-print">'+printHeader('Descrição de Cargo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(d.title)+'</div></div><div class="info-box"><span class="label">Subordinação / Setor</span><div class="value">'+esc(d.sub)+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(area)+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(d.mission)+'</div>')+sectionBlock('Responsabilidades Principais','<div class="section-content"><ul class="compact-list">'+mainRows+'</ul></div>')+sectionBlock('Perfil Requerido / Próximo Nível','<div class="section-content">'+profile+'</div>')+sectionBlock('Habilidades e Competências','<div class="section-content"><ul class="compact-list">'+skillList+'</ul></div>')+sectionBlock('Treinamentos Obrigatórios','<div class="section-content">'+train+'</div>')+sectionBlock('Observações / Validação','<div class="section-content obs-box"></div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Descrição de Cargo A4 Barion',html,'portrait');
+  };
+
+  // Compactação forçada de impressão para 1 página
+  const oldOpenPrint = window.openPrintWindow || openPrintWindow;
+  window.openPrintWindow = openPrintWindow = function(title,bodyHtml,orientation='portrait'){
+    const w=window.open('','_blank'); if(!w){alert('Libere pop-ups para imprimir.');return;}
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:8mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;height:281mm;overflow:hidden;background:white;position:relative;padding-bottom:14mm}.doc-head{display:grid;grid-template-columns:145px 1fr 145px;border:1.4px solid #4B260C;height:54px;margin-bottom:12px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.4px solid #4B260C;padding:5px 10px}.doc-logo img{max-width:118px;max-height:34px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#2b1507}.doc-meta{border-left:1.4px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.3}.info-grid{display:grid;grid-template-columns:1.3fr .9fr .9fr;gap:10px;margin-bottom:10px}.info-box{border:1px solid #D9CDBA;min-height:48px;padding:7px 10px}.label{font-family:monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:4px;display:block}.value{font-size:11px;font-weight:700;color:#211003;line-height:1.2}.section{margin-bottom:9px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:22px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#a8998c;font-family:monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;padding:0 10px}.section-content{padding:7px 10px;font-size:9.5px;line-height:1.32;min-height:26px}table{width:100%;border-collapse:collapse;font-size:8.6px}th{font-family:monospace;text-transform:uppercase;font-size:7px;letter-spacing:.06em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:4.5px 6px;vertical-align:top}td b{font-size:8.8px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:5px 9px;font-size:8.8px;display:flex;gap:7px;align-items:flex-start}.box{width:11px;height:11px;border:1.2px solid #4B260C;display:inline-block;flex:0 0 11px}.obs-box{height:52px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:22px 0 0}.sig{text-align:center;font-size:8px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.2px solid #4B260C;margin-bottom:6px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:5px;display:flex;justify-content:space-between;font-family:monospace;font-size:7px;color:#8b7b6a;letter-spacing:.04em}.compact-list{margin:0;padding-left:13px}.compact-list li{margin-bottom:3px;line-height:1.25;font-size:9px}@media print{.barion-page{page-break-after:avoid}}</style></head><body>'+bodyHtml+'</body></html>');
+    w.document.close(); setTimeout(()=>{w.focus();w.print();},350);
+  };
+
+  function initPatch(){
+    removeUnwantedVisuals(); addOrgAddButton(); addEditBadges(); ensureDiaryPrintName();
+    if(!defaultOrgHtml){
+      const oc=document.querySelector('#mt-organograma .org-container'); if(oc) defaultOrgHtml=oc.innerHTML;
+    }
+    try{initCargoCards();}catch(e){}
+  }
+  // Limpa versões locais antigas que trouxeram organograma incompleto.
+  localStorage.removeItem('org-config');
+  localStorage.removeItem('org-config-v3');
+  document.addEventListener('DOMContentLoaded',initPatch);
+  setTimeout(initPatch,250);
+  setTimeout(initPatch,900);
+})();
+</script>
+
+</body></html>`); w.document.close(); setTimeout(()=>{w.focus();w.print();},300);
 }
 function getCargoLabel(){ return CARGOS.find(c=>c.id===currentCargoId) || {title:'Diário de Bordo', areaLabel:'—', sub:''}; }
 function printDiarioA4(){
@@ -2867,7 +3197,337 @@ function openPrintWindow(title, bodyHtml, orientation='portrait'){
     .label{font-size:8px;text-transform:uppercase;color:#6B3A1F;letter-spacing:.08em;display:block;margin-bottom:2px;} .barion-section{padding:8px 10px;border-bottom:1px solid #D9CDBA;break-inside:avoid;} .sec-title{background:#4B260C;color:white;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:5px 8px;margin:0 0 6px 0;font-weight:700;} .mission{font-size:11px;line-height:1.35;}
     table{width:100%;border-collapse:collapse;font-size:10px;} th{background:#C59A5B;color:#211003;text-transform:uppercase;font-size:9px;} th,td{border:1px solid #4B260C;padding:4px 5px;vertical-align:top;} ul{margin:0;padding-left:16px;font-size:10px;line-height:1.35;} .small{font-size:9px;color:#6B3A1F;}
     .cargo-print .cargo-head{background:#4B260C!important;color:white!important;padding:10px 12px;} .cargo-print .cargo-title{color:white!important;font-family:Arial,sans-serif!important;font-size:18px!important;margin:0 0 4px 0;} .cargo-print .cargo-tag,.cargo-print .cargo-report{color:#F7F2EB!important;} .cargo-print .cargo-body{display:block!important;padding:10px 12px;} .cargo-actions{display:none!important;} .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;} .ficha-label{font-weight:bold;color:#4B260C;text-transform:uppercase;font-size:9px;border-bottom:1px solid #C59A5B;margin-bottom:4px;} .cargo-list,.cargo-list-compact{margin:0;padding-left:15px;} .cargo-list li,.cargo-list-compact li{font-size:10px;margin-bottom:2px;}
-  </style></head><body>${bodyHtml}</body></html>`); w.document.close(); setTimeout(()=>{w.focus();w.print();},300);
+  </style></head><body>${bodyHtml}
+
+<!-- PATCH FINAL ANDERSON · UX GESTÃO / ORGANOGRAMA / CARGOS / A4 -->
+<style id="anderson-final-ux-patch">
+  /* Limpeza visual solicitada */
+  .hmeta{display:none!important;}
+  .supabase-panel{display:none!important;}
+  #org-editor-panel{display:none!important;}
+  button[onclick*="toggleOrgEditor"],
+  button[onclick*="saveOrgOnline"],
+  button[onclick*="loadOrgOnline"],
+  button[onclick*="saveCargoConfigOnline"],
+  button[onclick*="loadCargoConfigOnline"],
+  button[onclick*="expandAllCargoCards"]{display:none!important;}
+
+  /* Usuário no topo, dentro da área marrom */
+  .user-session-bar{
+    position:fixed!important;top:14px;right:22px;z-index:9999;
+    display:none;background:rgba(247,242,235,.12)!important;
+    border:1px solid rgba(247,242,235,.28)!important;border-radius:8px;
+    padding:8px 10px!important;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.12);
+  }
+  body.authenticated .user-session-bar{display:flex!important;}
+  .user-session-info{color:#F7F2EB!important;font-size:9px!important;}
+  .user-session-info strong{color:#fff!important;}
+  .logout-btn{background:#F7F2EB!important;color:#3D1F0D!important;border:0!important;border-radius:5px;padding:6px 10px;cursor:pointer;}
+
+  /* Campo nome impressão diário */
+  .print-name-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+  .print-name-row label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);}
+  .print-name-row input{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--cream-dark);background:var(--cream);border-radius:5px;padding:8px 10px;width:100%;}
+
+  /* Edição direta do organograma */
+  .node{position:relative;}
+  .org-card-edit{display:none;position:absolute;right:6px;top:6px;z-index:5;background:rgba(255,255,255,.92);border:1px solid rgba(61,31,13,.18);border-radius:4px;font-size:11px;padding:2px 6px;color:#3D1F0D;cursor:pointer;}
+  body.role-supervisao .node:hover .org-card-edit{display:block;}
+  .anderson-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:50000;display:none;align-items:center;justify-content:center;padding:18px;}
+  .anderson-modal-backdrop.open{display:flex;}
+  .anderson-modal{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#F7F2EB;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid #D9CDBA;}
+  .anderson-modal-head{background:#3D1F0D;color:#F7F2EB;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .anderson-modal-title{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.1;}
+  .anderson-modal-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C4956A;margin-bottom:4px;}
+  .anderson-modal-body{padding:18px 20px;}
+  .am-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .am-field{display:flex;flex-direction:column;gap:5px;}
+  .am-field.full{grid-column:1/-1;}
+  .am-field label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7A6550;}
+  .am-field input,.am-field select,.am-field textarea{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid #D9CDBA;border-radius:6px;background:white;padding:9px 10px;resize:vertical;}
+  .am-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #EDE5D8;background:white;position:sticky;bottom:0;}
+  .am-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 14px;border-radius:6px;border:1px solid #D9CDBA;background:white;color:#3D1F0D;cursor:pointer;}
+  .am-btn.primary{background:#3D1F0D;color:#fff;border-color:#3D1F0D;}
+  .am-btn.danger{background:#fff;color:#B84C1E;border-color:#B84C1E;}
+
+  .list-editor{display:flex;flex-direction:column;gap:6px;}
+  .list-editor-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;}
+  .list-editor-row textarea,.list-editor-row input{width:100%;font-size:12px;border:1px solid #D9CDBA;border-radius:5px;padding:7px 8px;background:white;}
+  .mini-delete{border:1px solid #D9CDBA;background:#fff;border-radius:5px;color:#B84C1E;padding:7px 9px;cursor:pointer;}
+  .mini-add{align-self:flex-start;margin-top:4px;border:1px solid #D9CDBA;background:#F7F2EB;border-radius:5px;color:#3D1F0D;padding:6px 10px;cursor:pointer;font-size:12px;}
+
+  /* Cards de cargo mais limpos */
+  .cargo-actions{gap:6px!important;}
+  .cargo-action-btn[data-act="edit"],.cargo-action-btn[data-act="print"]{font-size:11px!important;padding:5px 9px!important;}
+  .cargo-card.editing .cargo-head,.cargo-card.editing .cargo-title,.cargo-card.editing .cargo-report{outline:none!important;color:inherit!important;}
+
+  @media(max-width:720px){.am-grid{grid-template-columns:1fr}.print-name-row{grid-template-columns:1fr}.user-session-bar{position:static!important;margin:0;border-radius:0;width:100%;justify-content:space-between}}
+</style>
+
+<script id="anderson-final-ux-patch-js">
+(function(){
+  const NEW_ORG_CONFIG_ID = 'org-config-v4-default-restored';
+  const NEW_CARGO_CONFIG_ID = 'cargo-config-v4-structured';
+  let defaultOrgHtml = null;
+  let activeOrgNode = null;
+  let activeCargoCard = null;
+
+  function esc(s){ return (s??'').toString().replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function client(){ try{return getSupabaseClient ? getSupabaseClient() : null;}catch(e){return null;} }
+  function isSupervisor(){ try{return typeof canEditAll==='function' && canEditAll();}catch(e){return false;} }
+
+  function removeUnwantedVisuals(){
+    document.querySelectorAll('button').forEach(btn=>{
+      const t=(btn.textContent||'').trim().toLowerCase();
+      const oc=btn.getAttribute('onclick')||'';
+      if(t.includes('expandir/recolher') || t.includes('salvar descrições') || t.includes('carregar descrições') || t.includes('salvar organograma') || t.includes('carregar online') || t.includes('editar organograma') || oc.includes('toggleOrgEditor') || oc.includes('saveCargoConfigOnline') || oc.includes('loadCargoConfigOnline') || oc.includes('saveOrgOnline') || oc.includes('loadOrgOnline')) btn.style.display='none';
+    });
+    document.querySelectorAll('.supabase-panel,#org-editor-panel,.hmeta').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.cargo-filter[data-cf="lideranca"],.filter-btn[data-filter="lideranca"]').forEach(el=>{el.textContent='Gestão'});
+    document.querySelectorAll('.cargo-section-label,.dlc-area-tag,.cargo-tag,.node-role,.ctrl-label').forEach(el=>{ if((el.textContent||'').includes('Liderança')) el.textContent=el.textContent.replaceAll('Liderança','Gestão'); });
+  }
+
+  function addOrgAddButton(){
+    const controls=document.querySelector('#mt-organograma .controls');
+    if(!controls || controls.querySelector('#btn-add-org-direct')) return;
+    const btn=document.createElement('button');
+    btn.className='filter-btn'; btn.id='btn-add-org-direct'; btn.type='button'; btn.textContent='Adicionar posição';
+    btn.onclick=()=>openOrgEditor(null,true);
+    const ref=controls.querySelector('#one-page-btn') || controls.lastElementChild;
+    controls.insertBefore(btn, ref);
+  }
+
+  function ensureOrgIds(){
+    document.querySelectorAll('#mt-organograma .node').forEach((n,i)=>{
+      if(!n.dataset.orgId){
+        const nm=(n.dataset.name||n.querySelector('.node-name')?.textContent||'posicao').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        n.dataset.orgId = (nm || 'posicao')+'-'+i;
+      }
+    });
+  }
+
+  function addEditBadges(){
+    ensureOrgIds();
+    document.querySelectorAll('#mt-organograma .node').forEach(n=>{
+      if(!n.querySelector('.org-card-edit')){
+        const b=document.createElement('button'); b.type='button'; b.className='org-card-edit'; b.textContent='Editar';
+        b.onclick=(e)=>{e.stopPropagation(); openOrgEditor(n,false);};
+        n.appendChild(b);
+      }
+      n.ondblclick=(e)=>{ if(isSupervisor()){ e.preventDefault(); e.stopPropagation(); openOrgEditor(n,false);} };
+    });
+  }
+
+  function orgModal(){
+    let wrap=document.getElementById('org-direct-modal');
+    if(wrap) return wrap;
+    wrap=document.createElement('div'); wrap.id='org-direct-modal'; wrap.className='anderson-modal-backdrop';
+    wrap.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Organograma</div><div class="anderson-modal-title" id="org-modal-title">Editar posição</div></div><button class="am-btn" type="button" id="org-modal-close">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Nome</label><input id="org-direct-name"></div><div class="am-field"><label>Função / cargo</label><input id="org-direct-role"></div><div class="am-field"><label>Reporta a</label><input id="org-direct-reports"></div><div class="am-field"><label>Área visual</label><select id="org-direct-area"><option value="pcp">PCP</option><option value="almox">Almoxarifado</option><option value="expedicao">Expedição</option><option value="lideranca">Gestão</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Turno / classe</label><select id="org-direct-class"><option value="adm">ADM</option><option value="turno-1">1º Turno</option><option value="turno-2">2º Turno</option><option value="turno-3">3º Turno</option><option value="leadership">Gestão superior</option><option value="supervisor">Supervisor</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Filtros onde aparece</label><input id="org-direct-group" placeholder="ex.: pcp almox expedicao"></div><div class="am-field full"><label>Descrição curta / complemento</label><input id="org-direct-meta"></div></div></div><div class="am-actions"><button class="am-btn danger" type="button" id="org-direct-delete">Excluir posição</button><button class="am-btn" type="button" id="org-direct-cancel">Cancelar</button><button class="am-btn primary" type="button" id="org-direct-save">Concluir</button></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#org-modal-close').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-cancel').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-save').onclick=saveOrgDirect;
+    wrap.querySelector('#org-direct-delete').onclick=deleteOrgDirect;
+    return wrap;
+  }
+
+  function openOrgEditor(node,isNew){
+    if(!isSupervisor()){ alert('Seu perfil não permite editar o organograma.'); return; }
+    activeOrgNode=node;
+    const m=orgModal();
+    m.querySelector('#org-modal-title').textContent=isNew?'Adicionar posição':'Editar posição';
+    m.querySelector('#org-direct-delete').style.display=isNew?'none':'';
+    m.querySelector('#org-direct-name').value=isNew?'':(node.dataset.name||node.querySelector('.node-name')?.textContent||'');
+    m.querySelector('#org-direct-role').value=isNew?'':(node.dataset.role||node.querySelector('.node-role')?.textContent||'');
+    m.querySelector('#org-direct-reports').value=isNew?'':(node.dataset.reports||'');
+    m.querySelector('#org-direct-meta').value=isNew?'':(node.querySelector('.node-meta')?.textContent||node.dataset.area||'');
+    m.querySelector('#org-direct-group').value=isNew?'':(node.dataset.group||'');
+    let area='pcp';
+    if(node){ if(node.classList.contains('almox')) area='almox'; else if(node.classList.contains('expedicao')) area='expedicao'; else if(node.classList.contains('leadership')||node.classList.contains('supervisor')) area='lideranca'; else if(node.classList.contains('bridge')) area='bridge'; }
+    m.querySelector('#org-direct-area').value=area;
+    let cls='adm';
+    if(node){ ['turno-1','turno-2','turno-3','leadership','supervisor','bridge','adm'].forEach(c=>{if(node.classList.contains(c)) cls=c;}); }
+    m.querySelector('#org-direct-class').value=cls;
+    m.classList.add('open');
+  }
+
+  function placeOrgNode(node,area){
+    if(area==='lideranca' || area==='bridge') return;
+    const col=document.querySelector(`.area-column[data-area-column="${area}"] .sub-column`);
+    if(col && node.parentNode!==col) col.appendChild(node);
+  }
+
+  function saveOrgDirect(){
+    const m=orgModal();
+    const name=m.querySelector('#org-direct-name').value.trim()||'Novo colaborador';
+    const role=m.querySelector('#org-direct-role').value.trim()||'Nova função';
+    const reports=m.querySelector('#org-direct-reports').value.trim();
+    const meta=m.querySelector('#org-direct-meta').value.trim();
+    const group=m.querySelector('#org-direct-group').value.trim();
+    const area=m.querySelector('#org-direct-area').value;
+    const cls=m.querySelector('#org-direct-class').value;
+    let node=activeOrgNode;
+    if(!node){
+      const col=document.querySelector(`.area-column[data-area-column="${area==='bridge'?'pcp':area==='lideranca'?'pcp':area}"] .sub-column`) || document.querySelector('.area-column .sub-column');
+      node=document.createElement('div'); col.appendChild(node);
+      node.dataset.orgId='novo-'+Date.now();
+    }
+    node.className='node';
+    if(area==='almox') node.classList.add('almox'); else if(area==='expedicao') node.classList.add('expedicao'); else if(area==='bridge') node.classList.add('bridge'); else if(area==='lideranca') node.classList.add(cls==='leadership'?'leadership':'supervisor'); else node.classList.add('pcp');
+    if(!['leadership','supervisor','bridge'].includes(cls)) node.classList.add(cls);
+    node.dataset.name=name; node.dataset.role=role; node.dataset.reports=reports; node.dataset.area=meta; node.dataset.group=group || (area==='lideranca'?'lideranca pcp almox expedicao':area==='bridge'?'pcp almox':area);
+    node.innerHTML=`<div class="node-role">${esc(role)}</div><div class="node-name">${esc(name)}</div>${meta?`<div class="node-meta">${esc(meta)}</div>`:''}`;
+    placeOrgNode(node,area);
+    addEditBadges();
+    m.classList.remove('open');
+    saveOrgOnline({silent:true});
+  }
+  function deleteOrgDirect(){
+    if(!activeOrgNode) return; if(!confirm('Excluir esta posição?')) return; activeOrgNode.remove(); activeOrgNode=null; orgModal().classList.remove('open'); saveOrgOnline({silent:true});
+  }
+
+  function cleanOrgHtml(){
+    const clone=document.querySelector('#mt-organograma .org-container').cloneNode(true);
+    clone.querySelectorAll('.org-card-edit,.hidden').forEach(x=>x.remove());
+    clone.querySelectorAll('[style]').forEach(x=>x.removeAttribute('style'));
+    return clone.innerHTML;
+  }
+  window.saveOrgOnline = saveOrgOnline = async function(options={}){
+    if(!isSupervisor()) return;
+    const content={html:cleanOrgHtml()}; localStorage.setItem('org-config-v4',JSON.stringify(content));
+    const c=client(); if(!c) return;
+    await c.from(SB_TABLE).upsert({data_ref:CONFIG_DATE,cargo_id:NEW_ORG_CONFIG_ID,area:'config',area_label:'Configuração',cargo_titulo:'Organograma',nome_pessoa:(window.authProfile?.nome||''),conteudo:content,checklist_estado:[],atualizado_por:(window.authProfile?.nome||'não informado'),atualizado_em:new Date().toISOString()},{onConflict:'data_ref,cargo_id'});
+  };
+  window.loadOrgOnline = loadOrgOnline = async function(options={}){
+    // Usa novo ID para descartar versão antiga editada acidentalmente e restaurar Alexandre/Edimara.
+    const c=client();
+    if(c){
+      const {data}=await c.from(SB_TABLE).select('conteudo').eq('data_ref',CONFIG_DATE).eq('cargo_id',NEW_ORG_CONFIG_ID).maybeSingle();
+      if(data?.conteudo?.html){
+        const oc=document.querySelector('#mt-organograma .org-container'); oc.innerHTML=data.conteudo.html; addEditBadges(); return;
+      }
+    }
+    if(defaultOrgHtml){ document.querySelector('#mt-organograma .org-container').innerHTML=defaultOrgHtml; addEditBadges(); }
+  };
+
+  function ensureDiaryPrintName(){
+    const body=document.querySelector('#diario-modal .diario-body');
+    const toolbar=document.querySelector('#diario-modal .dm-toolbar');
+    if(!body || !toolbar || document.getElementById('diario-print-name')) return;
+    const row=document.createElement('div'); row.className='print-name-row';
+    row.innerHTML='<label>Nome para impressão A4</label><input id="diario-print-name" placeholder="Digite o nome que deve sair no PDF A4">';
+    toolbar.parentNode.insertBefore(row, toolbar.nextSibling);
+    const input=row.querySelector('input');
+    input.value=localStorage.getItem('diario-print-name') || window.authProfile?.nome || '';
+    input.addEventListener('input',()=>localStorage.setItem('diario-print-name',input.value));
+  }
+
+  function getPrintName(){ return (document.getElementById('diario-print-name')?.value || localStorage.getItem('diario-print-name') || window.authProfile?.nome || '').trim(); }
+
+  window.printDiarioA4=function(){
+    if(!currentData) return; if(typeof renderView==='function') renderView();
+    const cargo=getCargoLabel(); const nome=getPrintName();
+    const dailyRows=(currentData.daily||[]).slice(0,7).map(r=>'<tr><td style="width:92px">'+esc(r.time||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const weeklyRows=(currentData.weekly||[]).slice(0,4).map(r=>'<tr><td style="width:130px">'+esc(r.freq||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const checklist=(currentData.checklist||[]).slice(0,8).map(x=>'<div class="check-item"><span class="box"></span><span>'+esc(x)+'</span></div>').join('')||'<div class="check-item"><span class="box"></span><span>Nenhum checklist cadastrado.</span></div>';
+    const html='<div class="barion-page one-page-print">'+printHeader('Diário de Bordo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Nome</span><div class="value">'+esc(nome||'________________________')+'</div></div><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(cargo.title||'—')+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(cargo.areaLabel||'—')+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(currentData.mission||'—')+'</div>')+sectionBlock('Atividades Diárias','<table><thead><tr><th>Horário</th><th>Atividade</th><th>Descrição / Padrão esperado</th></tr></thead><tbody>'+dailyRows+'</tbody></table>')+sectionBlock('Atividades Semanais / Rotinas Periódicas','<table><thead><tr><th>Frequência</th><th>Atividade</th><th>Descrição / Entrega esperada</th></tr></thead><tbody>'+weeklyRows+'</tbody></table>')+sectionBlock('Checklist de Acompanhamento','<div class="check-grid">'+checklist+'</div>')+sectionBlock('Observações / Orientações do Gestor','<div class="section-content obs-box">'+esc(currentData.obs||'')+'</div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Diário A4 Barion',html,'portrait');
+  };
+
+  // Editor estruturado de descrições de cargo
+  function cargoModal(){
+    let w=document.getElementById('cargo-structured-modal'); if(w)return w;
+    w=document.createElement('div'); w.id='cargo-structured-modal'; w.className='anderson-modal-backdrop';
+    w.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Descrição de cargo</div><div class="anderson-modal-title">Editar descrição</div></div><button class="am-btn" id="cargo-modal-close" type="button">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Cargo / função</label><input id="cargo-ed-title"></div><div class="am-field"><label>Subordinação / setor</label><input id="cargo-ed-report"></div><div class="am-field full"><label>Missão / propósito</label><textarea id="cargo-ed-mission" rows="3"></textarea></div><div class="am-field full"><label>Responsabilidades principais</label><div class="list-editor" id="cargo-ed-resp"></div><button class="mini-add" data-list="cargo-ed-resp" type="button">+ Adicionar responsabilidade</button></div><div class="am-field"><label>Perfil requerido</label><textarea id="cargo-ed-profile" rows="4"></textarea></div><div class="am-field"><label>Próximo nível</label><textarea id="cargo-ed-next" rows="4"></textarea></div><div class="am-field"><label>Habilidades técnicas</label><div class="list-editor" id="cargo-ed-tech"></div><button class="mini-add" data-list="cargo-ed-tech" type="button">+ Adicionar habilidade</button></div><div class="am-field"><label>Competências comportamentais</label><div class="list-editor" id="cargo-ed-comp"></div><button class="mini-add" data-list="cargo-ed-comp" type="button">+ Adicionar competência</button></div><div class="am-field full"><label>Treinamentos obrigatórios</label><div class="list-editor" id="cargo-ed-train"></div><button class="mini-add" data-list="cargo-ed-train" type="button">+ Adicionar treinamento</button></div></div></div><div class="am-actions"><button class="am-btn" type="button" id="cargo-ed-cancel">Cancelar</button><button class="am-btn primary" type="button" id="cargo-ed-save">Concluir</button></div></div>`;
+    document.body.appendChild(w);
+    w.querySelector('#cargo-modal-close').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-cancel').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-save').onclick=saveCargoStructured;
+    w.querySelectorAll('.mini-add').forEach(b=>b.onclick=()=>addListRow(b.dataset.list,''));
+    return w;
+  }
+  function addListRow(id,val){ const box=document.getElementById(id); if(!box)return; const row=document.createElement('div'); row.className='list-editor-row'; row.innerHTML='<textarea rows="2">'+esc(val||'')+'</textarea><button class="mini-delete" type="button">Excluir</button>'; row.querySelector('button').onclick=()=>row.remove(); box.appendChild(row); }
+  function setList(id,items){ const box=document.getElementById(id); if(!box)return; box.innerHTML=''; (items&&items.length?items:['']).forEach(x=>addListRow(id,x)); }
+  function getList(id){ return [...(document.getElementById(id)?.querySelectorAll('textarea')||[])].map(x=>x.value.trim()).filter(Boolean); }
+  function openCargoStructured(card){
+    if(!isSupervisor()){alert('Seu perfil não permite editar descrições de cargo.');return;}
+    activeCargoCard=card; const w=cargoModal();
+    w.querySelector('#cargo-ed-title').value=card.querySelector('.cargo-title')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-report').value=card.querySelector('.cargo-report')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-mission').value=card.querySelector('.cargo-mission')?.textContent.trim()||'';
+    setList('cargo-ed-resp',[...card.querySelectorAll('.cargo-list')][0]?[...[...card.querySelectorAll('.cargo-list')][0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    const fichaTexts=[...card.querySelectorAll('.ficha-text')].map(x=>x.textContent.trim());
+    w.querySelector('#cargo-ed-profile').value=fichaTexts[0]||''; w.querySelector('#cargo-ed-next').value=fichaTexts[1]||'';
+    const compactLists=[...card.querySelectorAll('.cargo-list-compact')];
+    setList('cargo-ed-tech',compactLists[0]?[...compactLists[0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-comp',compactLists[1]?[...compactLists[1].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-train',[...card.querySelectorAll('.ficha-chip')].map(x=>x.textContent.trim()));
+    w.classList.add('open');
+  }
+  function saveCargoStructured(){
+    const card=activeCargoCard; if(!card)return;
+    card.querySelector('.cargo-title').textContent=document.getElementById('cargo-ed-title').value.trim()||'Descrição de Cargo';
+    card.querySelector('.cargo-report').textContent=document.getElementById('cargo-ed-report').value.trim();
+    card.querySelector('.cargo-mission').textContent=document.getElementById('cargo-ed-mission').value.trim();
+    const lists=[...card.querySelectorAll('.cargo-list')]; if(lists[0]) lists[0].innerHTML=getList('cargo-ed-resp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const texts=[...card.querySelectorAll('.ficha-text')]; if(texts[0]) texts[0].textContent=document.getElementById('cargo-ed-profile').value.trim(); if(texts[1]) texts[1].textContent=document.getElementById('cargo-ed-next').value.trim();
+    const cl=[...card.querySelectorAll('.cargo-list-compact')]; if(cl[0]) cl[0].innerHTML=getList('cargo-ed-tech').map(x=>'<li>'+esc(x)+'</li>').join(''); if(cl[1]) cl[1].innerHTML=getList('cargo-ed-comp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const chips=card.querySelector('.ficha-chips'); if(chips) chips.innerHTML=getList('cargo-ed-train').map(x=>'<span class="ficha-chip">'+esc(x)+'</span>').join('');
+    document.getElementById('cargo-structured-modal').classList.remove('open');
+    saveCargoConfigOnline({silent:true});
+  }
+
+  const oldInit = window.initCargoCards || initCargoCards;
+  window.initCargoCards = initCargoCards = function(){
+    if(typeof oldInit==='function') oldInit();
+    document.querySelectorAll('.cargo-card').forEach((card,idx)=>{
+      if(!card.dataset.cargoEditId) card.dataset.cargoEditId='cargo-'+idx;
+      const head=card.querySelector('.cargo-head'); if(!head)return;
+      let actions=head.querySelector('.cargo-actions');
+      if(!actions){actions=document.createElement('div');actions.className='cargo-actions';head.appendChild(actions);} 
+      actions.innerHTML='<button class="cargo-action-btn" data-act="edit" type="button">Editar</button><button class="cargo-action-btn" data-act="print" type="button">Imprimir A4</button>';
+      actions.querySelector('[data-act="edit"]').onclick=(e)=>{e.stopPropagation();openCargoStructured(card);};
+      actions.querySelector('[data-act="print"]').onclick=(e)=>{e.stopPropagation();printCargoCard(card);};
+      if(!isSupervisor()) actions.querySelector('[data-act="edit"]').style.display='none';
+    });
+  };
+
+  // Imprimir descrição em 1 página, no mesmo padrão do diário
+  window.printCargoCard=function(card){
+    const d=extractCargoPrintData(card); const area=(d.sub.match(/Setor:\s*([^·]+)/i)?.[1]||'PCP / Logística Industrial').trim();
+    const mainRows=d.main.slice(0,8).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const profile=d.ficha.slice(0,2).map(x=>'<b>'+esc(x.label)+':</b> '+esc(x.text)).join('<br>')||'—';
+    const skillList=d.compact.slice(0,10).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const train=d.chips.slice(0,12).map(x=>'<span style="display:inline-block;border:1px solid #D9CDBA;padding:3px 6px;margin:2px 3px 2px 0;font-size:8.5px">'+esc(x)+'</span>').join('')||'—';
+    const html='<div class="barion-page one-page-print">'+printHeader('Descrição de Cargo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(d.title)+'</div></div><div class="info-box"><span class="label">Subordinação / Setor</span><div class="value">'+esc(d.sub)+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(area)+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(d.mission)+'</div>')+sectionBlock('Responsabilidades Principais','<div class="section-content"><ul class="compact-list">'+mainRows+'</ul></div>')+sectionBlock('Perfil Requerido / Próximo Nível','<div class="section-content">'+profile+'</div>')+sectionBlock('Habilidades e Competências','<div class="section-content"><ul class="compact-list">'+skillList+'</ul></div>')+sectionBlock('Treinamentos Obrigatórios','<div class="section-content">'+train+'</div>')+sectionBlock('Observações / Validação','<div class="section-content obs-box"></div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Descrição de Cargo A4 Barion',html,'portrait');
+  };
+
+  // Compactação forçada de impressão para 1 página
+  const oldOpenPrint = window.openPrintWindow || openPrintWindow;
+  window.openPrintWindow = openPrintWindow = function(title,bodyHtml,orientation='portrait'){
+    const w=window.open('','_blank'); if(!w){alert('Libere pop-ups para imprimir.');return;}
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:8mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;height:281mm;overflow:hidden;background:white;position:relative;padding-bottom:14mm}.doc-head{display:grid;grid-template-columns:145px 1fr 145px;border:1.4px solid #4B260C;height:54px;margin-bottom:12px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.4px solid #4B260C;padding:5px 10px}.doc-logo img{max-width:118px;max-height:34px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#2b1507}.doc-meta{border-left:1.4px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.3}.info-grid{display:grid;grid-template-columns:1.3fr .9fr .9fr;gap:10px;margin-bottom:10px}.info-box{border:1px solid #D9CDBA;min-height:48px;padding:7px 10px}.label{font-family:monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:4px;display:block}.value{font-size:11px;font-weight:700;color:#211003;line-height:1.2}.section{margin-bottom:9px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:22px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#a8998c;font-family:monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;padding:0 10px}.section-content{padding:7px 10px;font-size:9.5px;line-height:1.32;min-height:26px}table{width:100%;border-collapse:collapse;font-size:8.6px}th{font-family:monospace;text-transform:uppercase;font-size:7px;letter-spacing:.06em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:4.5px 6px;vertical-align:top}td b{font-size:8.8px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:5px 9px;font-size:8.8px;display:flex;gap:7px;align-items:flex-start}.box{width:11px;height:11px;border:1.2px solid #4B260C;display:inline-block;flex:0 0 11px}.obs-box{height:52px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:22px 0 0}.sig{text-align:center;font-size:8px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.2px solid #4B260C;margin-bottom:6px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:5px;display:flex;justify-content:space-between;font-family:monospace;font-size:7px;color:#8b7b6a;letter-spacing:.04em}.compact-list{margin:0;padding-left:13px}.compact-list li{margin-bottom:3px;line-height:1.25;font-size:9px}@media print{.barion-page{page-break-after:avoid}}</style></head><body>'+bodyHtml+'</body></html>');
+    w.document.close(); setTimeout(()=>{w.focus();w.print();},350);
+  };
+
+  function initPatch(){
+    removeUnwantedVisuals(); addOrgAddButton(); addEditBadges(); ensureDiaryPrintName();
+    if(!defaultOrgHtml){
+      const oc=document.querySelector('#mt-organograma .org-container'); if(oc) defaultOrgHtml=oc.innerHTML;
+    }
+    try{initCargoCards();}catch(e){}
+  }
+  // Limpa versões locais antigas que trouxeram organograma incompleto.
+  localStorage.removeItem('org-config');
+  localStorage.removeItem('org-config-v3');
+  document.addEventListener('DOMContentLoaded',initPatch);
+  setTimeout(initPatch,250);
+  setTimeout(initPatch,900);
+})();
+</script>
+
+</body></html>`); w.document.close(); setTimeout(()=>{w.focus();w.print();},300);
 }
 function getCargoLabel(){ return CARGOS.find(c=>c.id===currentCargoId) || {title:'Diário de Bordo', areaLabel:'—', sub:''}; }
 function printDiarioA4(){
@@ -2953,7 +3613,337 @@ if(typeof addOrgNode==='function'){const f=addOrgNode; window.addOrgNode=functio
 if(typeof saveOrgOnline==='function'){const f=saveOrgOnline; window.saveOrgOnline=async function(options={}){ if(!canEditAll()){if(!options.silent)alert('Seu perfil não permite salvar organograma.');return;} return f(options);};}
 if(typeof saveCargoConfigOnline==='function'){const f=saveCargoConfigOnline; window.saveCargoConfigOnline=async function(options={}){ if(!canEditAll()){if(!options.silent)alert('Seu perfil não permite salvar descrições de cargo.');return;} return f(options);};}
 function getBarionLogo(){return (typeof BARION_LOGO_DATA!=='undefined'&&BARION_LOGO_DATA)?BARION_LOGO_DATA:'';}
-function openPrintWindow(title,bodyHtml,orientation='portrait'){const w=window.open('','_blank'); if(!w){alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.');return;} w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:10mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;min-height:277mm;background:white;position:relative;padding-bottom:20mm}.doc-head{display:grid;grid-template-columns:155px 1fr 155px;border:1.6px solid #4B260C;height:58px;margin-bottom:18px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.6px solid #4B260C;padding:6px 12px}.doc-logo img{max-width:120px;max-height:38px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#2b1507}.doc-meta{border-left:1.6px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.45}.info-grid{display:grid;grid-template-columns:1.35fr .9fr .9fr;gap:12px;margin-bottom:14px}.info-box{border:1px solid #D9CDBA;min-height:54px;padding:9px 12px}.label{font-family:monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:6px;display:block}.value{font-size:12px;font-weight:700;color:#211003;line-height:1.25}.section{margin-bottom:14px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:26px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#b2a79b;font-family:monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:0 12px}.section-content{padding:10px 12px;font-size:11px;line-height:1.45;min-height:34px}table{width:100%;border-collapse:collapse;font-size:10px}th{font-family:monospace;text-transform:uppercase;font-size:8px;letter-spacing:.08em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:7px 8px;vertical-align:top}td b{font-size:10px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:8px 12px;font-size:10px;display:flex;gap:8px;align-items:flex-start}.box{width:14px;height:14px;border:1.5px solid #4B260C;display:inline-block;flex:0 0 14px}.obs-box{height:68px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:32px 0 0}.sig{text-align:center;font-size:9px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.4px solid #4B260C;margin-bottom:8px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:6px;display:flex;justify-content:space-between;font-family:monospace;font-size:7.5px;color:#8b7b6a;letter-spacing:.05em}.compact-list{margin:0;padding-left:14px}.compact-list li{margin-bottom:4px;line-height:1.35;font-size:10px}</style></head><body>'+bodyHtml+'</body></html>'); w.document.close(); setTimeout(()=>{w.focus();w.print();},350);}
+function openPrintWindow(title,bodyHtml,orientation='portrait'){const w=window.open('','_blank'); if(!w){alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.');return;} w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:10mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;min-height:277mm;background:white;position:relative;padding-bottom:20mm}.doc-head{display:grid;grid-template-columns:155px 1fr 155px;border:1.6px solid #4B260C;height:58px;margin-bottom:18px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.6px solid #4B260C;padding:6px 12px}.doc-logo img{max-width:120px;max-height:38px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#2b1507}.doc-meta{border-left:1.6px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.45}.info-grid{display:grid;grid-template-columns:1.35fr .9fr .9fr;gap:12px;margin-bottom:14px}.info-box{border:1px solid #D9CDBA;min-height:54px;padding:9px 12px}.label{font-family:monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:6px;display:block}.value{font-size:12px;font-weight:700;color:#211003;line-height:1.25}.section{margin-bottom:14px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:26px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#b2a79b;font-family:monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:0 12px}.section-content{padding:10px 12px;font-size:11px;line-height:1.45;min-height:34px}table{width:100%;border-collapse:collapse;font-size:10px}th{font-family:monospace;text-transform:uppercase;font-size:8px;letter-spacing:.08em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:7px 8px;vertical-align:top}td b{font-size:10px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:8px 12px;font-size:10px;display:flex;gap:8px;align-items:flex-start}.box{width:14px;height:14px;border:1.5px solid #4B260C;display:inline-block;flex:0 0 14px}.obs-box{height:68px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:32px 0 0}.sig{text-align:center;font-size:9px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.4px solid #4B260C;margin-bottom:8px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:6px;display:flex;justify-content:space-between;font-family:monospace;font-size:7.5px;color:#8b7b6a;letter-spacing:.05em}.compact-list{margin:0;padding-left:14px}.compact-list li{margin-bottom:4px;line-height:1.35;font-size:10px}</style></head><body>'+bodyHtml+'
+
+<!-- PATCH FINAL ANDERSON · UX GESTÃO / ORGANOGRAMA / CARGOS / A4 -->
+<style id="anderson-final-ux-patch">
+  /* Limpeza visual solicitada */
+  .hmeta{display:none!important;}
+  .supabase-panel{display:none!important;}
+  #org-editor-panel{display:none!important;}
+  button[onclick*="toggleOrgEditor"],
+  button[onclick*="saveOrgOnline"],
+  button[onclick*="loadOrgOnline"],
+  button[onclick*="saveCargoConfigOnline"],
+  button[onclick*="loadCargoConfigOnline"],
+  button[onclick*="expandAllCargoCards"]{display:none!important;}
+
+  /* Usuário no topo, dentro da área marrom */
+  .user-session-bar{
+    position:fixed!important;top:14px;right:22px;z-index:9999;
+    display:none;background:rgba(247,242,235,.12)!important;
+    border:1px solid rgba(247,242,235,.28)!important;border-radius:8px;
+    padding:8px 10px!important;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.12);
+  }
+  body.authenticated .user-session-bar{display:flex!important;}
+  .user-session-info{color:#F7F2EB!important;font-size:9px!important;}
+  .user-session-info strong{color:#fff!important;}
+  .logout-btn{background:#F7F2EB!important;color:#3D1F0D!important;border:0!important;border-radius:5px;padding:6px 10px;cursor:pointer;}
+
+  /* Campo nome impressão diário */
+  .print-name-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+  .print-name-row label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);}
+  .print-name-row input{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--cream-dark);background:var(--cream);border-radius:5px;padding:8px 10px;width:100%;}
+
+  /* Edição direta do organograma */
+  .node{position:relative;}
+  .org-card-edit{display:none;position:absolute;right:6px;top:6px;z-index:5;background:rgba(255,255,255,.92);border:1px solid rgba(61,31,13,.18);border-radius:4px;font-size:11px;padding:2px 6px;color:#3D1F0D;cursor:pointer;}
+  body.role-supervisao .node:hover .org-card-edit{display:block;}
+  .anderson-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:50000;display:none;align-items:center;justify-content:center;padding:18px;}
+  .anderson-modal-backdrop.open{display:flex;}
+  .anderson-modal{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#F7F2EB;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid #D9CDBA;}
+  .anderson-modal-head{background:#3D1F0D;color:#F7F2EB;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .anderson-modal-title{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.1;}
+  .anderson-modal-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C4956A;margin-bottom:4px;}
+  .anderson-modal-body{padding:18px 20px;}
+  .am-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .am-field{display:flex;flex-direction:column;gap:5px;}
+  .am-field.full{grid-column:1/-1;}
+  .am-field label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7A6550;}
+  .am-field input,.am-field select,.am-field textarea{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid #D9CDBA;border-radius:6px;background:white;padding:9px 10px;resize:vertical;}
+  .am-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #EDE5D8;background:white;position:sticky;bottom:0;}
+  .am-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 14px;border-radius:6px;border:1px solid #D9CDBA;background:white;color:#3D1F0D;cursor:pointer;}
+  .am-btn.primary{background:#3D1F0D;color:#fff;border-color:#3D1F0D;}
+  .am-btn.danger{background:#fff;color:#B84C1E;border-color:#B84C1E;}
+
+  .list-editor{display:flex;flex-direction:column;gap:6px;}
+  .list-editor-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;}
+  .list-editor-row textarea,.list-editor-row input{width:100%;font-size:12px;border:1px solid #D9CDBA;border-radius:5px;padding:7px 8px;background:white;}
+  .mini-delete{border:1px solid #D9CDBA;background:#fff;border-radius:5px;color:#B84C1E;padding:7px 9px;cursor:pointer;}
+  .mini-add{align-self:flex-start;margin-top:4px;border:1px solid #D9CDBA;background:#F7F2EB;border-radius:5px;color:#3D1F0D;padding:6px 10px;cursor:pointer;font-size:12px;}
+
+  /* Cards de cargo mais limpos */
+  .cargo-actions{gap:6px!important;}
+  .cargo-action-btn[data-act="edit"],.cargo-action-btn[data-act="print"]{font-size:11px!important;padding:5px 9px!important;}
+  .cargo-card.editing .cargo-head,.cargo-card.editing .cargo-title,.cargo-card.editing .cargo-report{outline:none!important;color:inherit!important;}
+
+  @media(max-width:720px){.am-grid{grid-template-columns:1fr}.print-name-row{grid-template-columns:1fr}.user-session-bar{position:static!important;margin:0;border-radius:0;width:100%;justify-content:space-between}}
+</style>
+
+<script id="anderson-final-ux-patch-js">
+(function(){
+  const NEW_ORG_CONFIG_ID = 'org-config-v4-default-restored';
+  const NEW_CARGO_CONFIG_ID = 'cargo-config-v4-structured';
+  let defaultOrgHtml = null;
+  let activeOrgNode = null;
+  let activeCargoCard = null;
+
+  function esc(s){ return (s??'').toString().replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function client(){ try{return getSupabaseClient ? getSupabaseClient() : null;}catch(e){return null;} }
+  function isSupervisor(){ try{return typeof canEditAll==='function' && canEditAll();}catch(e){return false;} }
+
+  function removeUnwantedVisuals(){
+    document.querySelectorAll('button').forEach(btn=>{
+      const t=(btn.textContent||'').trim().toLowerCase();
+      const oc=btn.getAttribute('onclick')||'';
+      if(t.includes('expandir/recolher') || t.includes('salvar descrições') || t.includes('carregar descrições') || t.includes('salvar organograma') || t.includes('carregar online') || t.includes('editar organograma') || oc.includes('toggleOrgEditor') || oc.includes('saveCargoConfigOnline') || oc.includes('loadCargoConfigOnline') || oc.includes('saveOrgOnline') || oc.includes('loadOrgOnline')) btn.style.display='none';
+    });
+    document.querySelectorAll('.supabase-panel,#org-editor-panel,.hmeta').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.cargo-filter[data-cf="lideranca"],.filter-btn[data-filter="lideranca"]').forEach(el=>{el.textContent='Gestão'});
+    document.querySelectorAll('.cargo-section-label,.dlc-area-tag,.cargo-tag,.node-role,.ctrl-label').forEach(el=>{ if((el.textContent||'').includes('Liderança')) el.textContent=el.textContent.replaceAll('Liderança','Gestão'); });
+  }
+
+  function addOrgAddButton(){
+    const controls=document.querySelector('#mt-organograma .controls');
+    if(!controls || controls.querySelector('#btn-add-org-direct')) return;
+    const btn=document.createElement('button');
+    btn.className='filter-btn'; btn.id='btn-add-org-direct'; btn.type='button'; btn.textContent='Adicionar posição';
+    btn.onclick=()=>openOrgEditor(null,true);
+    const ref=controls.querySelector('#one-page-btn') || controls.lastElementChild;
+    controls.insertBefore(btn, ref);
+  }
+
+  function ensureOrgIds(){
+    document.querySelectorAll('#mt-organograma .node').forEach((n,i)=>{
+      if(!n.dataset.orgId){
+        const nm=(n.dataset.name||n.querySelector('.node-name')?.textContent||'posicao').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        n.dataset.orgId = (nm || 'posicao')+'-'+i;
+      }
+    });
+  }
+
+  function addEditBadges(){
+    ensureOrgIds();
+    document.querySelectorAll('#mt-organograma .node').forEach(n=>{
+      if(!n.querySelector('.org-card-edit')){
+        const b=document.createElement('button'); b.type='button'; b.className='org-card-edit'; b.textContent='Editar';
+        b.onclick=(e)=>{e.stopPropagation(); openOrgEditor(n,false);};
+        n.appendChild(b);
+      }
+      n.ondblclick=(e)=>{ if(isSupervisor()){ e.preventDefault(); e.stopPropagation(); openOrgEditor(n,false);} };
+    });
+  }
+
+  function orgModal(){
+    let wrap=document.getElementById('org-direct-modal');
+    if(wrap) return wrap;
+    wrap=document.createElement('div'); wrap.id='org-direct-modal'; wrap.className='anderson-modal-backdrop';
+    wrap.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Organograma</div><div class="anderson-modal-title" id="org-modal-title">Editar posição</div></div><button class="am-btn" type="button" id="org-modal-close">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Nome</label><input id="org-direct-name"></div><div class="am-field"><label>Função / cargo</label><input id="org-direct-role"></div><div class="am-field"><label>Reporta a</label><input id="org-direct-reports"></div><div class="am-field"><label>Área visual</label><select id="org-direct-area"><option value="pcp">PCP</option><option value="almox">Almoxarifado</option><option value="expedicao">Expedição</option><option value="lideranca">Gestão</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Turno / classe</label><select id="org-direct-class"><option value="adm">ADM</option><option value="turno-1">1º Turno</option><option value="turno-2">2º Turno</option><option value="turno-3">3º Turno</option><option value="leadership">Gestão superior</option><option value="supervisor">Supervisor</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Filtros onde aparece</label><input id="org-direct-group" placeholder="ex.: pcp almox expedicao"></div><div class="am-field full"><label>Descrição curta / complemento</label><input id="org-direct-meta"></div></div></div><div class="am-actions"><button class="am-btn danger" type="button" id="org-direct-delete">Excluir posição</button><button class="am-btn" type="button" id="org-direct-cancel">Cancelar</button><button class="am-btn primary" type="button" id="org-direct-save">Concluir</button></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#org-modal-close').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-cancel').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-save').onclick=saveOrgDirect;
+    wrap.querySelector('#org-direct-delete').onclick=deleteOrgDirect;
+    return wrap;
+  }
+
+  function openOrgEditor(node,isNew){
+    if(!isSupervisor()){ alert('Seu perfil não permite editar o organograma.'); return; }
+    activeOrgNode=node;
+    const m=orgModal();
+    m.querySelector('#org-modal-title').textContent=isNew?'Adicionar posição':'Editar posição';
+    m.querySelector('#org-direct-delete').style.display=isNew?'none':'';
+    m.querySelector('#org-direct-name').value=isNew?'':(node.dataset.name||node.querySelector('.node-name')?.textContent||'');
+    m.querySelector('#org-direct-role').value=isNew?'':(node.dataset.role||node.querySelector('.node-role')?.textContent||'');
+    m.querySelector('#org-direct-reports').value=isNew?'':(node.dataset.reports||'');
+    m.querySelector('#org-direct-meta').value=isNew?'':(node.querySelector('.node-meta')?.textContent||node.dataset.area||'');
+    m.querySelector('#org-direct-group').value=isNew?'':(node.dataset.group||'');
+    let area='pcp';
+    if(node){ if(node.classList.contains('almox')) area='almox'; else if(node.classList.contains('expedicao')) area='expedicao'; else if(node.classList.contains('leadership')||node.classList.contains('supervisor')) area='lideranca'; else if(node.classList.contains('bridge')) area='bridge'; }
+    m.querySelector('#org-direct-area').value=area;
+    let cls='adm';
+    if(node){ ['turno-1','turno-2','turno-3','leadership','supervisor','bridge','adm'].forEach(c=>{if(node.classList.contains(c)) cls=c;}); }
+    m.querySelector('#org-direct-class').value=cls;
+    m.classList.add('open');
+  }
+
+  function placeOrgNode(node,area){
+    if(area==='lideranca' || area==='bridge') return;
+    const col=document.querySelector(`.area-column[data-area-column="${area}"] .sub-column`);
+    if(col && node.parentNode!==col) col.appendChild(node);
+  }
+
+  function saveOrgDirect(){
+    const m=orgModal();
+    const name=m.querySelector('#org-direct-name').value.trim()||'Novo colaborador';
+    const role=m.querySelector('#org-direct-role').value.trim()||'Nova função';
+    const reports=m.querySelector('#org-direct-reports').value.trim();
+    const meta=m.querySelector('#org-direct-meta').value.trim();
+    const group=m.querySelector('#org-direct-group').value.trim();
+    const area=m.querySelector('#org-direct-area').value;
+    const cls=m.querySelector('#org-direct-class').value;
+    let node=activeOrgNode;
+    if(!node){
+      const col=document.querySelector(`.area-column[data-area-column="${area==='bridge'?'pcp':area==='lideranca'?'pcp':area}"] .sub-column`) || document.querySelector('.area-column .sub-column');
+      node=document.createElement('div'); col.appendChild(node);
+      node.dataset.orgId='novo-'+Date.now();
+    }
+    node.className='node';
+    if(area==='almox') node.classList.add('almox'); else if(area==='expedicao') node.classList.add('expedicao'); else if(area==='bridge') node.classList.add('bridge'); else if(area==='lideranca') node.classList.add(cls==='leadership'?'leadership':'supervisor'); else node.classList.add('pcp');
+    if(!['leadership','supervisor','bridge'].includes(cls)) node.classList.add(cls);
+    node.dataset.name=name; node.dataset.role=role; node.dataset.reports=reports; node.dataset.area=meta; node.dataset.group=group || (area==='lideranca'?'lideranca pcp almox expedicao':area==='bridge'?'pcp almox':area);
+    node.innerHTML=`<div class="node-role">${esc(role)}</div><div class="node-name">${esc(name)}</div>${meta?`<div class="node-meta">${esc(meta)}</div>`:''}`;
+    placeOrgNode(node,area);
+    addEditBadges();
+    m.classList.remove('open');
+    saveOrgOnline({silent:true});
+  }
+  function deleteOrgDirect(){
+    if(!activeOrgNode) return; if(!confirm('Excluir esta posição?')) return; activeOrgNode.remove(); activeOrgNode=null; orgModal().classList.remove('open'); saveOrgOnline({silent:true});
+  }
+
+  function cleanOrgHtml(){
+    const clone=document.querySelector('#mt-organograma .org-container').cloneNode(true);
+    clone.querySelectorAll('.org-card-edit,.hidden').forEach(x=>x.remove());
+    clone.querySelectorAll('[style]').forEach(x=>x.removeAttribute('style'));
+    return clone.innerHTML;
+  }
+  window.saveOrgOnline = saveOrgOnline = async function(options={}){
+    if(!isSupervisor()) return;
+    const content={html:cleanOrgHtml()}; localStorage.setItem('org-config-v4',JSON.stringify(content));
+    const c=client(); if(!c) return;
+    await c.from(SB_TABLE).upsert({data_ref:CONFIG_DATE,cargo_id:NEW_ORG_CONFIG_ID,area:'config',area_label:'Configuração',cargo_titulo:'Organograma',nome_pessoa:(window.authProfile?.nome||''),conteudo:content,checklist_estado:[],atualizado_por:(window.authProfile?.nome||'não informado'),atualizado_em:new Date().toISOString()},{onConflict:'data_ref,cargo_id'});
+  };
+  window.loadOrgOnline = loadOrgOnline = async function(options={}){
+    // Usa novo ID para descartar versão antiga editada acidentalmente e restaurar Alexandre/Edimara.
+    const c=client();
+    if(c){
+      const {data}=await c.from(SB_TABLE).select('conteudo').eq('data_ref',CONFIG_DATE).eq('cargo_id',NEW_ORG_CONFIG_ID).maybeSingle();
+      if(data?.conteudo?.html){
+        const oc=document.querySelector('#mt-organograma .org-container'); oc.innerHTML=data.conteudo.html; addEditBadges(); return;
+      }
+    }
+    if(defaultOrgHtml){ document.querySelector('#mt-organograma .org-container').innerHTML=defaultOrgHtml; addEditBadges(); }
+  };
+
+  function ensureDiaryPrintName(){
+    const body=document.querySelector('#diario-modal .diario-body');
+    const toolbar=document.querySelector('#diario-modal .dm-toolbar');
+    if(!body || !toolbar || document.getElementById('diario-print-name')) return;
+    const row=document.createElement('div'); row.className='print-name-row';
+    row.innerHTML='<label>Nome para impressão A4</label><input id="diario-print-name" placeholder="Digite o nome que deve sair no PDF A4">';
+    toolbar.parentNode.insertBefore(row, toolbar.nextSibling);
+    const input=row.querySelector('input');
+    input.value=localStorage.getItem('diario-print-name') || window.authProfile?.nome || '';
+    input.addEventListener('input',()=>localStorage.setItem('diario-print-name',input.value));
+  }
+
+  function getPrintName(){ return (document.getElementById('diario-print-name')?.value || localStorage.getItem('diario-print-name') || window.authProfile?.nome || '').trim(); }
+
+  window.printDiarioA4=function(){
+    if(!currentData) return; if(typeof renderView==='function') renderView();
+    const cargo=getCargoLabel(); const nome=getPrintName();
+    const dailyRows=(currentData.daily||[]).slice(0,7).map(r=>'<tr><td style="width:92px">'+esc(r.time||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const weeklyRows=(currentData.weekly||[]).slice(0,4).map(r=>'<tr><td style="width:130px">'+esc(r.freq||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const checklist=(currentData.checklist||[]).slice(0,8).map(x=>'<div class="check-item"><span class="box"></span><span>'+esc(x)+'</span></div>').join('')||'<div class="check-item"><span class="box"></span><span>Nenhum checklist cadastrado.</span></div>';
+    const html='<div class="barion-page one-page-print">'+printHeader('Diário de Bordo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Nome</span><div class="value">'+esc(nome||'________________________')+'</div></div><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(cargo.title||'—')+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(cargo.areaLabel||'—')+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(currentData.mission||'—')+'</div>')+sectionBlock('Atividades Diárias','<table><thead><tr><th>Horário</th><th>Atividade</th><th>Descrição / Padrão esperado</th></tr></thead><tbody>'+dailyRows+'</tbody></table>')+sectionBlock('Atividades Semanais / Rotinas Periódicas','<table><thead><tr><th>Frequência</th><th>Atividade</th><th>Descrição / Entrega esperada</th></tr></thead><tbody>'+weeklyRows+'</tbody></table>')+sectionBlock('Checklist de Acompanhamento','<div class="check-grid">'+checklist+'</div>')+sectionBlock('Observações / Orientações do Gestor','<div class="section-content obs-box">'+esc(currentData.obs||'')+'</div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Diário A4 Barion',html,'portrait');
+  };
+
+  // Editor estruturado de descrições de cargo
+  function cargoModal(){
+    let w=document.getElementById('cargo-structured-modal'); if(w)return w;
+    w=document.createElement('div'); w.id='cargo-structured-modal'; w.className='anderson-modal-backdrop';
+    w.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Descrição de cargo</div><div class="anderson-modal-title">Editar descrição</div></div><button class="am-btn" id="cargo-modal-close" type="button">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Cargo / função</label><input id="cargo-ed-title"></div><div class="am-field"><label>Subordinação / setor</label><input id="cargo-ed-report"></div><div class="am-field full"><label>Missão / propósito</label><textarea id="cargo-ed-mission" rows="3"></textarea></div><div class="am-field full"><label>Responsabilidades principais</label><div class="list-editor" id="cargo-ed-resp"></div><button class="mini-add" data-list="cargo-ed-resp" type="button">+ Adicionar responsabilidade</button></div><div class="am-field"><label>Perfil requerido</label><textarea id="cargo-ed-profile" rows="4"></textarea></div><div class="am-field"><label>Próximo nível</label><textarea id="cargo-ed-next" rows="4"></textarea></div><div class="am-field"><label>Habilidades técnicas</label><div class="list-editor" id="cargo-ed-tech"></div><button class="mini-add" data-list="cargo-ed-tech" type="button">+ Adicionar habilidade</button></div><div class="am-field"><label>Competências comportamentais</label><div class="list-editor" id="cargo-ed-comp"></div><button class="mini-add" data-list="cargo-ed-comp" type="button">+ Adicionar competência</button></div><div class="am-field full"><label>Treinamentos obrigatórios</label><div class="list-editor" id="cargo-ed-train"></div><button class="mini-add" data-list="cargo-ed-train" type="button">+ Adicionar treinamento</button></div></div></div><div class="am-actions"><button class="am-btn" type="button" id="cargo-ed-cancel">Cancelar</button><button class="am-btn primary" type="button" id="cargo-ed-save">Concluir</button></div></div>`;
+    document.body.appendChild(w);
+    w.querySelector('#cargo-modal-close').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-cancel').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-save').onclick=saveCargoStructured;
+    w.querySelectorAll('.mini-add').forEach(b=>b.onclick=()=>addListRow(b.dataset.list,''));
+    return w;
+  }
+  function addListRow(id,val){ const box=document.getElementById(id); if(!box)return; const row=document.createElement('div'); row.className='list-editor-row'; row.innerHTML='<textarea rows="2">'+esc(val||'')+'</textarea><button class="mini-delete" type="button">Excluir</button>'; row.querySelector('button').onclick=()=>row.remove(); box.appendChild(row); }
+  function setList(id,items){ const box=document.getElementById(id); if(!box)return; box.innerHTML=''; (items&&items.length?items:['']).forEach(x=>addListRow(id,x)); }
+  function getList(id){ return [...(document.getElementById(id)?.querySelectorAll('textarea')||[])].map(x=>x.value.trim()).filter(Boolean); }
+  function openCargoStructured(card){
+    if(!isSupervisor()){alert('Seu perfil não permite editar descrições de cargo.');return;}
+    activeCargoCard=card; const w=cargoModal();
+    w.querySelector('#cargo-ed-title').value=card.querySelector('.cargo-title')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-report').value=card.querySelector('.cargo-report')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-mission').value=card.querySelector('.cargo-mission')?.textContent.trim()||'';
+    setList('cargo-ed-resp',[...card.querySelectorAll('.cargo-list')][0]?[...[...card.querySelectorAll('.cargo-list')][0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    const fichaTexts=[...card.querySelectorAll('.ficha-text')].map(x=>x.textContent.trim());
+    w.querySelector('#cargo-ed-profile').value=fichaTexts[0]||''; w.querySelector('#cargo-ed-next').value=fichaTexts[1]||'';
+    const compactLists=[...card.querySelectorAll('.cargo-list-compact')];
+    setList('cargo-ed-tech',compactLists[0]?[...compactLists[0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-comp',compactLists[1]?[...compactLists[1].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-train',[...card.querySelectorAll('.ficha-chip')].map(x=>x.textContent.trim()));
+    w.classList.add('open');
+  }
+  function saveCargoStructured(){
+    const card=activeCargoCard; if(!card)return;
+    card.querySelector('.cargo-title').textContent=document.getElementById('cargo-ed-title').value.trim()||'Descrição de Cargo';
+    card.querySelector('.cargo-report').textContent=document.getElementById('cargo-ed-report').value.trim();
+    card.querySelector('.cargo-mission').textContent=document.getElementById('cargo-ed-mission').value.trim();
+    const lists=[...card.querySelectorAll('.cargo-list')]; if(lists[0]) lists[0].innerHTML=getList('cargo-ed-resp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const texts=[...card.querySelectorAll('.ficha-text')]; if(texts[0]) texts[0].textContent=document.getElementById('cargo-ed-profile').value.trim(); if(texts[1]) texts[1].textContent=document.getElementById('cargo-ed-next').value.trim();
+    const cl=[...card.querySelectorAll('.cargo-list-compact')]; if(cl[0]) cl[0].innerHTML=getList('cargo-ed-tech').map(x=>'<li>'+esc(x)+'</li>').join(''); if(cl[1]) cl[1].innerHTML=getList('cargo-ed-comp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const chips=card.querySelector('.ficha-chips'); if(chips) chips.innerHTML=getList('cargo-ed-train').map(x=>'<span class="ficha-chip">'+esc(x)+'</span>').join('');
+    document.getElementById('cargo-structured-modal').classList.remove('open');
+    saveCargoConfigOnline({silent:true});
+  }
+
+  const oldInit = window.initCargoCards || initCargoCards;
+  window.initCargoCards = initCargoCards = function(){
+    if(typeof oldInit==='function') oldInit();
+    document.querySelectorAll('.cargo-card').forEach((card,idx)=>{
+      if(!card.dataset.cargoEditId) card.dataset.cargoEditId='cargo-'+idx;
+      const head=card.querySelector('.cargo-head'); if(!head)return;
+      let actions=head.querySelector('.cargo-actions');
+      if(!actions){actions=document.createElement('div');actions.className='cargo-actions';head.appendChild(actions);} 
+      actions.innerHTML='<button class="cargo-action-btn" data-act="edit" type="button">Editar</button><button class="cargo-action-btn" data-act="print" type="button">Imprimir A4</button>';
+      actions.querySelector('[data-act="edit"]').onclick=(e)=>{e.stopPropagation();openCargoStructured(card);};
+      actions.querySelector('[data-act="print"]').onclick=(e)=>{e.stopPropagation();printCargoCard(card);};
+      if(!isSupervisor()) actions.querySelector('[data-act="edit"]').style.display='none';
+    });
+  };
+
+  // Imprimir descrição em 1 página, no mesmo padrão do diário
+  window.printCargoCard=function(card){
+    const d=extractCargoPrintData(card); const area=(d.sub.match(/Setor:\s*([^·]+)/i)?.[1]||'PCP / Logística Industrial').trim();
+    const mainRows=d.main.slice(0,8).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const profile=d.ficha.slice(0,2).map(x=>'<b>'+esc(x.label)+':</b> '+esc(x.text)).join('<br>')||'—';
+    const skillList=d.compact.slice(0,10).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const train=d.chips.slice(0,12).map(x=>'<span style="display:inline-block;border:1px solid #D9CDBA;padding:3px 6px;margin:2px 3px 2px 0;font-size:8.5px">'+esc(x)+'</span>').join('')||'—';
+    const html='<div class="barion-page one-page-print">'+printHeader('Descrição de Cargo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(d.title)+'</div></div><div class="info-box"><span class="label">Subordinação / Setor</span><div class="value">'+esc(d.sub)+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(area)+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(d.mission)+'</div>')+sectionBlock('Responsabilidades Principais','<div class="section-content"><ul class="compact-list">'+mainRows+'</ul></div>')+sectionBlock('Perfil Requerido / Próximo Nível','<div class="section-content">'+profile+'</div>')+sectionBlock('Habilidades e Competências','<div class="section-content"><ul class="compact-list">'+skillList+'</ul></div>')+sectionBlock('Treinamentos Obrigatórios','<div class="section-content">'+train+'</div>')+sectionBlock('Observações / Validação','<div class="section-content obs-box"></div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Descrição de Cargo A4 Barion',html,'portrait');
+  };
+
+  // Compactação forçada de impressão para 1 página
+  const oldOpenPrint = window.openPrintWindow || openPrintWindow;
+  window.openPrintWindow = openPrintWindow = function(title,bodyHtml,orientation='portrait'){
+    const w=window.open('','_blank'); if(!w){alert('Libere pop-ups para imprimir.');return;}
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:8mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;height:281mm;overflow:hidden;background:white;position:relative;padding-bottom:14mm}.doc-head{display:grid;grid-template-columns:145px 1fr 145px;border:1.4px solid #4B260C;height:54px;margin-bottom:12px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.4px solid #4B260C;padding:5px 10px}.doc-logo img{max-width:118px;max-height:34px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#2b1507}.doc-meta{border-left:1.4px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.3}.info-grid{display:grid;grid-template-columns:1.3fr .9fr .9fr;gap:10px;margin-bottom:10px}.info-box{border:1px solid #D9CDBA;min-height:48px;padding:7px 10px}.label{font-family:monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:4px;display:block}.value{font-size:11px;font-weight:700;color:#211003;line-height:1.2}.section{margin-bottom:9px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:22px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#a8998c;font-family:monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;padding:0 10px}.section-content{padding:7px 10px;font-size:9.5px;line-height:1.32;min-height:26px}table{width:100%;border-collapse:collapse;font-size:8.6px}th{font-family:monospace;text-transform:uppercase;font-size:7px;letter-spacing:.06em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:4.5px 6px;vertical-align:top}td b{font-size:8.8px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:5px 9px;font-size:8.8px;display:flex;gap:7px;align-items:flex-start}.box{width:11px;height:11px;border:1.2px solid #4B260C;display:inline-block;flex:0 0 11px}.obs-box{height:52px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:22px 0 0}.sig{text-align:center;font-size:8px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.2px solid #4B260C;margin-bottom:6px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:5px;display:flex;justify-content:space-between;font-family:monospace;font-size:7px;color:#8b7b6a;letter-spacing:.04em}.compact-list{margin:0;padding-left:13px}.compact-list li{margin-bottom:3px;line-height:1.25;font-size:9px}@media print{.barion-page{page-break-after:avoid}}</style></head><body>'+bodyHtml+'</body></html>');
+    w.document.close(); setTimeout(()=>{w.focus();w.print();},350);
+  };
+
+  function initPatch(){
+    removeUnwantedVisuals(); addOrgAddButton(); addEditBadges(); ensureDiaryPrintName();
+    if(!defaultOrgHtml){
+      const oc=document.querySelector('#mt-organograma .org-container'); if(oc) defaultOrgHtml=oc.innerHTML;
+    }
+    try{initCargoCards();}catch(e){}
+  }
+  // Limpa versões locais antigas que trouxeram organograma incompleto.
+  localStorage.removeItem('org-config');
+  localStorage.removeItem('org-config-v3');
+  document.addEventListener('DOMContentLoaded',initPatch);
+  setTimeout(initPatch,250);
+  setTimeout(initPatch,900);
+})();
+</script>
+
+</body></html>'); w.document.close(); setTimeout(()=>{w.focus();w.print();},350);}
 function printHeader(title,model='MODELO INTERNO<br>PDF A4'){return '<div class="doc-head"><div class="doc-logo"><img src="'+getBarionLogo()+'"></div><div class="doc-title">'+title+'</div><div class="doc-meta">'+model+'</div></div>';}
 function sectionBlock(title,inner){return '<div class="section"><div class="section-title">'+title+'</div>'+inner+'</div>';}
 window.printDiarioA4=function(){if(!currentData)return; renderView(); const cargo=getCargoLabel(); const nome=(window.authProfile?.nome||document.getElementById('sb-user')?.value||localStorage.getItem('supabase-user')||'').trim(); const dailyRows=(currentData.daily||[]).map(r=>'<tr><td style="width:100px">'+escapeHtml(r.time||'')+'</td><td style="width:230px"><b>'+escapeHtml(r.title||'')+'</b></td><td>'+escapeHtml(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>'; const weeklyRows=(currentData.weekly||[]).map(r=>'<tr><td style="width:160px">'+escapeHtml(r.freq||'')+'</td><td style="width:220px"><b>'+escapeHtml(r.title||'')+'</b></td><td>'+escapeHtml(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>'; const checklist=(currentData.checklist||[]).map(x=>'<div class="check-item"><span class="box"></span><span>'+escapeHtml(x)+'</span></div>').join('')||'<div class="check-item"><span class="box"></span><span>Nenhum checklist cadastrado.</span></div>'; const html='<div class="barion-page">'+printHeader('Diário de Bordo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Nome</span><div class="value">'+escapeHtml(nome||'________________________')+'</div></div><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+escapeHtml(cargo.title||'—')+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+escapeHtml(cargo.areaLabel||'—')+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+escapeHtml(currentData.mission||'—')+'</div>')+sectionBlock('Atividades Diárias','<table><thead><tr><th>Horário</th><th>Atividade</th><th>Descrição / Padrão esperado</th></tr></thead><tbody>'+dailyRows+'</tbody></table>')+sectionBlock('Atividades Semanais / Rotinas Periódicas','<table><thead><tr><th>Frequência</th><th>Atividade</th><th>Descrição / Entrega esperada</th></tr></thead><tbody>'+weeklyRows+'</tbody></table>')+sectionBlock('Checklist de Acompanhamento','<div class="check-grid">'+checklist+'</div>')+sectionBlock('Observações / Orientações do Gestor','<div class="section-content obs-box">'+escapeHtml(currentData.obs||'')+'</div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>'; openPrintWindow('Diário A4 Barion',html,'portrait');};
@@ -2965,6 +3955,336 @@ setTimeout(()=>{try{initCargoCards();applyAuthUi();}catch(e){console.warn(e)}},7
 // Render inicial
 renderDiarioCards();
 
+</script>
+
+
+
+<!-- PATCH FINAL ANDERSON · UX GESTÃO / ORGANOGRAMA / CARGOS / A4 -->
+<style id="anderson-final-ux-patch">
+  /* Limpeza visual solicitada */
+  .hmeta{display:none!important;}
+  .supabase-panel{display:none!important;}
+  #org-editor-panel{display:none!important;}
+  button[onclick*="toggleOrgEditor"],
+  button[onclick*="saveOrgOnline"],
+  button[onclick*="loadOrgOnline"],
+  button[onclick*="saveCargoConfigOnline"],
+  button[onclick*="loadCargoConfigOnline"],
+  button[onclick*="expandAllCargoCards"]{display:none!important;}
+
+  /* Usuário no topo, dentro da área marrom */
+  .user-session-bar{
+    position:fixed!important;top:14px;right:22px;z-index:9999;
+    display:none;background:rgba(247,242,235,.12)!important;
+    border:1px solid rgba(247,242,235,.28)!important;border-radius:8px;
+    padding:8px 10px!important;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.12);
+  }
+  body.authenticated .user-session-bar{display:flex!important;}
+  .user-session-info{color:#F7F2EB!important;font-size:9px!important;}
+  .user-session-info strong{color:#fff!important;}
+  .logout-btn{background:#F7F2EB!important;color:#3D1F0D!important;border:0!important;border-radius:5px;padding:6px 10px;cursor:pointer;}
+
+  /* Campo nome impressão diário */
+  .print-name-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+  .print-name-row label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);}
+  .print-name-row input{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--cream-dark);background:var(--cream);border-radius:5px;padding:8px 10px;width:100%;}
+
+  /* Edição direta do organograma */
+  .node{position:relative;}
+  .org-card-edit{display:none;position:absolute;right:6px;top:6px;z-index:5;background:rgba(255,255,255,.92);border:1px solid rgba(61,31,13,.18);border-radius:4px;font-size:11px;padding:2px 6px;color:#3D1F0D;cursor:pointer;}
+  body.role-supervisao .node:hover .org-card-edit{display:block;}
+  .anderson-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:50000;display:none;align-items:center;justify-content:center;padding:18px;}
+  .anderson-modal-backdrop.open{display:flex;}
+  .anderson-modal{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#F7F2EB;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid #D9CDBA;}
+  .anderson-modal-head{background:#3D1F0D;color:#F7F2EB;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .anderson-modal-title{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.1;}
+  .anderson-modal-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C4956A;margin-bottom:4px;}
+  .anderson-modal-body{padding:18px 20px;}
+  .am-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .am-field{display:flex;flex-direction:column;gap:5px;}
+  .am-field.full{grid-column:1/-1;}
+  .am-field label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7A6550;}
+  .am-field input,.am-field select,.am-field textarea{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid #D9CDBA;border-radius:6px;background:white;padding:9px 10px;resize:vertical;}
+  .am-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #EDE5D8;background:white;position:sticky;bottom:0;}
+  .am-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 14px;border-radius:6px;border:1px solid #D9CDBA;background:white;color:#3D1F0D;cursor:pointer;}
+  .am-btn.primary{background:#3D1F0D;color:#fff;border-color:#3D1F0D;}
+  .am-btn.danger{background:#fff;color:#B84C1E;border-color:#B84C1E;}
+
+  .list-editor{display:flex;flex-direction:column;gap:6px;}
+  .list-editor-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;}
+  .list-editor-row textarea,.list-editor-row input{width:100%;font-size:12px;border:1px solid #D9CDBA;border-radius:5px;padding:7px 8px;background:white;}
+  .mini-delete{border:1px solid #D9CDBA;background:#fff;border-radius:5px;color:#B84C1E;padding:7px 9px;cursor:pointer;}
+  .mini-add{align-self:flex-start;margin-top:4px;border:1px solid #D9CDBA;background:#F7F2EB;border-radius:5px;color:#3D1F0D;padding:6px 10px;cursor:pointer;font-size:12px;}
+
+  /* Cards de cargo mais limpos */
+  .cargo-actions{gap:6px!important;}
+  .cargo-action-btn[data-act="edit"],.cargo-action-btn[data-act="print"]{font-size:11px!important;padding:5px 9px!important;}
+  .cargo-card.editing .cargo-head,.cargo-card.editing .cargo-title,.cargo-card.editing .cargo-report{outline:none!important;color:inherit!important;}
+
+  @media(max-width:720px){.am-grid{grid-template-columns:1fr}.print-name-row{grid-template-columns:1fr}.user-session-bar{position:static!important;margin:0;border-radius:0;width:100%;justify-content:space-between}}
+</style>
+
+<script id="anderson-final-ux-patch-js">
+(function(){
+  const NEW_ORG_CONFIG_ID = 'org-config-v4-default-restored';
+  const NEW_CARGO_CONFIG_ID = 'cargo-config-v4-structured';
+  let defaultOrgHtml = null;
+  let activeOrgNode = null;
+  let activeCargoCard = null;
+
+  function esc(s){ return (s??'').toString().replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function client(){ try{return getSupabaseClient ? getSupabaseClient() : null;}catch(e){return null;} }
+  function isSupervisor(){ try{return typeof canEditAll==='function' && canEditAll();}catch(e){return false;} }
+
+  function removeUnwantedVisuals(){
+    document.querySelectorAll('button').forEach(btn=>{
+      const t=(btn.textContent||'').trim().toLowerCase();
+      const oc=btn.getAttribute('onclick')||'';
+      if(t.includes('expandir/recolher') || t.includes('salvar descrições') || t.includes('carregar descrições') || t.includes('salvar organograma') || t.includes('carregar online') || t.includes('editar organograma') || oc.includes('toggleOrgEditor') || oc.includes('saveCargoConfigOnline') || oc.includes('loadCargoConfigOnline') || oc.includes('saveOrgOnline') || oc.includes('loadOrgOnline')) btn.style.display='none';
+    });
+    document.querySelectorAll('.supabase-panel,#org-editor-panel,.hmeta').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.cargo-filter[data-cf="lideranca"],.filter-btn[data-filter="lideranca"]').forEach(el=>{el.textContent='Gestão'});
+    document.querySelectorAll('.cargo-section-label,.dlc-area-tag,.cargo-tag,.node-role,.ctrl-label').forEach(el=>{ if((el.textContent||'').includes('Liderança')) el.textContent=el.textContent.replaceAll('Liderança','Gestão'); });
+  }
+
+  function addOrgAddButton(){
+    const controls=document.querySelector('#mt-organograma .controls');
+    if(!controls || controls.querySelector('#btn-add-org-direct')) return;
+    const btn=document.createElement('button');
+    btn.className='filter-btn'; btn.id='btn-add-org-direct'; btn.type='button'; btn.textContent='Adicionar posição';
+    btn.onclick=()=>openOrgEditor(null,true);
+    const ref=controls.querySelector('#one-page-btn') || controls.lastElementChild;
+    controls.insertBefore(btn, ref);
+  }
+
+  function ensureOrgIds(){
+    document.querySelectorAll('#mt-organograma .node').forEach((n,i)=>{
+      if(!n.dataset.orgId){
+        const nm=(n.dataset.name||n.querySelector('.node-name')?.textContent||'posicao').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        n.dataset.orgId = (nm || 'posicao')+'-'+i;
+      }
+    });
+  }
+
+  function addEditBadges(){
+    ensureOrgIds();
+    document.querySelectorAll('#mt-organograma .node').forEach(n=>{
+      if(!n.querySelector('.org-card-edit')){
+        const b=document.createElement('button'); b.type='button'; b.className='org-card-edit'; b.textContent='Editar';
+        b.onclick=(e)=>{e.stopPropagation(); openOrgEditor(n,false);};
+        n.appendChild(b);
+      }
+      n.ondblclick=(e)=>{ if(isSupervisor()){ e.preventDefault(); e.stopPropagation(); openOrgEditor(n,false);} };
+    });
+  }
+
+  function orgModal(){
+    let wrap=document.getElementById('org-direct-modal');
+    if(wrap) return wrap;
+    wrap=document.createElement('div'); wrap.id='org-direct-modal'; wrap.className='anderson-modal-backdrop';
+    wrap.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Organograma</div><div class="anderson-modal-title" id="org-modal-title">Editar posição</div></div><button class="am-btn" type="button" id="org-modal-close">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Nome</label><input id="org-direct-name"></div><div class="am-field"><label>Função / cargo</label><input id="org-direct-role"></div><div class="am-field"><label>Reporta a</label><input id="org-direct-reports"></div><div class="am-field"><label>Área visual</label><select id="org-direct-area"><option value="pcp">PCP</option><option value="almox">Almoxarifado</option><option value="expedicao">Expedição</option><option value="lideranca">Gestão</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Turno / classe</label><select id="org-direct-class"><option value="adm">ADM</option><option value="turno-1">1º Turno</option><option value="turno-2">2º Turno</option><option value="turno-3">3º Turno</option><option value="leadership">Gestão superior</option><option value="supervisor">Supervisor</option><option value="bridge">Transversal</option></select></div><div class="am-field"><label>Filtros onde aparece</label><input id="org-direct-group" placeholder="ex.: pcp almox expedicao"></div><div class="am-field full"><label>Descrição curta / complemento</label><input id="org-direct-meta"></div></div></div><div class="am-actions"><button class="am-btn danger" type="button" id="org-direct-delete">Excluir posição</button><button class="am-btn" type="button" id="org-direct-cancel">Cancelar</button><button class="am-btn primary" type="button" id="org-direct-save">Concluir</button></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#org-modal-close').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-cancel').onclick=()=>wrap.classList.remove('open');
+    wrap.querySelector('#org-direct-save').onclick=saveOrgDirect;
+    wrap.querySelector('#org-direct-delete').onclick=deleteOrgDirect;
+    return wrap;
+  }
+
+  function openOrgEditor(node,isNew){
+    if(!isSupervisor()){ alert('Seu perfil não permite editar o organograma.'); return; }
+    activeOrgNode=node;
+    const m=orgModal();
+    m.querySelector('#org-modal-title').textContent=isNew?'Adicionar posição':'Editar posição';
+    m.querySelector('#org-direct-delete').style.display=isNew?'none':'';
+    m.querySelector('#org-direct-name').value=isNew?'':(node.dataset.name||node.querySelector('.node-name')?.textContent||'');
+    m.querySelector('#org-direct-role').value=isNew?'':(node.dataset.role||node.querySelector('.node-role')?.textContent||'');
+    m.querySelector('#org-direct-reports').value=isNew?'':(node.dataset.reports||'');
+    m.querySelector('#org-direct-meta').value=isNew?'':(node.querySelector('.node-meta')?.textContent||node.dataset.area||'');
+    m.querySelector('#org-direct-group').value=isNew?'':(node.dataset.group||'');
+    let area='pcp';
+    if(node){ if(node.classList.contains('almox')) area='almox'; else if(node.classList.contains('expedicao')) area='expedicao'; else if(node.classList.contains('leadership')||node.classList.contains('supervisor')) area='lideranca'; else if(node.classList.contains('bridge')) area='bridge'; }
+    m.querySelector('#org-direct-area').value=area;
+    let cls='adm';
+    if(node){ ['turno-1','turno-2','turno-3','leadership','supervisor','bridge','adm'].forEach(c=>{if(node.classList.contains(c)) cls=c;}); }
+    m.querySelector('#org-direct-class').value=cls;
+    m.classList.add('open');
+  }
+
+  function placeOrgNode(node,area){
+    if(area==='lideranca' || area==='bridge') return;
+    const col=document.querySelector(`.area-column[data-area-column="${area}"] .sub-column`);
+    if(col && node.parentNode!==col) col.appendChild(node);
+  }
+
+  function saveOrgDirect(){
+    const m=orgModal();
+    const name=m.querySelector('#org-direct-name').value.trim()||'Novo colaborador';
+    const role=m.querySelector('#org-direct-role').value.trim()||'Nova função';
+    const reports=m.querySelector('#org-direct-reports').value.trim();
+    const meta=m.querySelector('#org-direct-meta').value.trim();
+    const group=m.querySelector('#org-direct-group').value.trim();
+    const area=m.querySelector('#org-direct-area').value;
+    const cls=m.querySelector('#org-direct-class').value;
+    let node=activeOrgNode;
+    if(!node){
+      const col=document.querySelector(`.area-column[data-area-column="${area==='bridge'?'pcp':area==='lideranca'?'pcp':area}"] .sub-column`) || document.querySelector('.area-column .sub-column');
+      node=document.createElement('div'); col.appendChild(node);
+      node.dataset.orgId='novo-'+Date.now();
+    }
+    node.className='node';
+    if(area==='almox') node.classList.add('almox'); else if(area==='expedicao') node.classList.add('expedicao'); else if(area==='bridge') node.classList.add('bridge'); else if(area==='lideranca') node.classList.add(cls==='leadership'?'leadership':'supervisor'); else node.classList.add('pcp');
+    if(!['leadership','supervisor','bridge'].includes(cls)) node.classList.add(cls);
+    node.dataset.name=name; node.dataset.role=role; node.dataset.reports=reports; node.dataset.area=meta; node.dataset.group=group || (area==='lideranca'?'lideranca pcp almox expedicao':area==='bridge'?'pcp almox':area);
+    node.innerHTML=`<div class="node-role">${esc(role)}</div><div class="node-name">${esc(name)}</div>${meta?`<div class="node-meta">${esc(meta)}</div>`:''}`;
+    placeOrgNode(node,area);
+    addEditBadges();
+    m.classList.remove('open');
+    saveOrgOnline({silent:true});
+  }
+  function deleteOrgDirect(){
+    if(!activeOrgNode) return; if(!confirm('Excluir esta posição?')) return; activeOrgNode.remove(); activeOrgNode=null; orgModal().classList.remove('open'); saveOrgOnline({silent:true});
+  }
+
+  function cleanOrgHtml(){
+    const clone=document.querySelector('#mt-organograma .org-container').cloneNode(true);
+    clone.querySelectorAll('.org-card-edit,.hidden').forEach(x=>x.remove());
+    clone.querySelectorAll('[style]').forEach(x=>x.removeAttribute('style'));
+    return clone.innerHTML;
+  }
+  window.saveOrgOnline = saveOrgOnline = async function(options={}){
+    if(!isSupervisor()) return;
+    const content={html:cleanOrgHtml()}; localStorage.setItem('org-config-v4',JSON.stringify(content));
+    const c=client(); if(!c) return;
+    await c.from(SB_TABLE).upsert({data_ref:CONFIG_DATE,cargo_id:NEW_ORG_CONFIG_ID,area:'config',area_label:'Configuração',cargo_titulo:'Organograma',nome_pessoa:(window.authProfile?.nome||''),conteudo:content,checklist_estado:[],atualizado_por:(window.authProfile?.nome||'não informado'),atualizado_em:new Date().toISOString()},{onConflict:'data_ref,cargo_id'});
+  };
+  window.loadOrgOnline = loadOrgOnline = async function(options={}){
+    // Usa novo ID para descartar versão antiga editada acidentalmente e restaurar Alexandre/Edimara.
+    const c=client();
+    if(c){
+      const {data}=await c.from(SB_TABLE).select('conteudo').eq('data_ref',CONFIG_DATE).eq('cargo_id',NEW_ORG_CONFIG_ID).maybeSingle();
+      if(data?.conteudo?.html){
+        const oc=document.querySelector('#mt-organograma .org-container'); oc.innerHTML=data.conteudo.html; addEditBadges(); return;
+      }
+    }
+    if(defaultOrgHtml){ document.querySelector('#mt-organograma .org-container').innerHTML=defaultOrgHtml; addEditBadges(); }
+  };
+
+  function ensureDiaryPrintName(){
+    const body=document.querySelector('#diario-modal .diario-body');
+    const toolbar=document.querySelector('#diario-modal .dm-toolbar');
+    if(!body || !toolbar || document.getElementById('diario-print-name')) return;
+    const row=document.createElement('div'); row.className='print-name-row';
+    row.innerHTML='<label>Nome para impressão A4</label><input id="diario-print-name" placeholder="Digite o nome que deve sair no PDF A4">';
+    toolbar.parentNode.insertBefore(row, toolbar.nextSibling);
+    const input=row.querySelector('input');
+    input.value=localStorage.getItem('diario-print-name') || window.authProfile?.nome || '';
+    input.addEventListener('input',()=>localStorage.setItem('diario-print-name',input.value));
+  }
+
+  function getPrintName(){ return (document.getElementById('diario-print-name')?.value || localStorage.getItem('diario-print-name') || window.authProfile?.nome || '').trim(); }
+
+  window.printDiarioA4=function(){
+    if(!currentData) return; if(typeof renderView==='function') renderView();
+    const cargo=getCargoLabel(); const nome=getPrintName();
+    const dailyRows=(currentData.daily||[]).slice(0,7).map(r=>'<tr><td style="width:92px">'+esc(r.time||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const weeklyRows=(currentData.weekly||[]).slice(0,4).map(r=>'<tr><td style="width:130px">'+esc(r.freq||'')+'</td><td style="width:210px"><b>'+esc(r.title||'')+'</b></td><td>'+esc(r.desc||'')+'</td></tr>').join('')||'<tr><td colspan="3">Nenhum registro cadastrado.</td></tr>';
+    const checklist=(currentData.checklist||[]).slice(0,8).map(x=>'<div class="check-item"><span class="box"></span><span>'+esc(x)+'</span></div>').join('')||'<div class="check-item"><span class="box"></span><span>Nenhum checklist cadastrado.</span></div>';
+    const html='<div class="barion-page one-page-print">'+printHeader('Diário de Bordo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Nome</span><div class="value">'+esc(nome||'________________________')+'</div></div><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(cargo.title||'—')+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(cargo.areaLabel||'—')+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(currentData.mission||'—')+'</div>')+sectionBlock('Atividades Diárias','<table><thead><tr><th>Horário</th><th>Atividade</th><th>Descrição / Padrão esperado</th></tr></thead><tbody>'+dailyRows+'</tbody></table>')+sectionBlock('Atividades Semanais / Rotinas Periódicas','<table><thead><tr><th>Frequência</th><th>Atividade</th><th>Descrição / Entrega esperada</th></tr></thead><tbody>'+weeklyRows+'</tbody></table>')+sectionBlock('Checklist de Acompanhamento','<div class="check-grid">'+checklist+'</div>')+sectionBlock('Observações / Orientações do Gestor','<div class="section-content obs-box">'+esc(currentData.obs||'')+'</div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Diário A4 Barion',html,'portrait');
+  };
+
+  // Editor estruturado de descrições de cargo
+  function cargoModal(){
+    let w=document.getElementById('cargo-structured-modal'); if(w)return w;
+    w=document.createElement('div'); w.id='cargo-structured-modal'; w.className='anderson-modal-backdrop';
+    w.innerHTML=`<div class="anderson-modal"><div class="anderson-modal-head"><div><div class="anderson-modal-sub">Descrição de cargo</div><div class="anderson-modal-title">Editar descrição</div></div><button class="am-btn" id="cargo-modal-close" type="button">Fechar</button></div><div class="anderson-modal-body"><div class="am-grid"><div class="am-field"><label>Cargo / função</label><input id="cargo-ed-title"></div><div class="am-field"><label>Subordinação / setor</label><input id="cargo-ed-report"></div><div class="am-field full"><label>Missão / propósito</label><textarea id="cargo-ed-mission" rows="3"></textarea></div><div class="am-field full"><label>Responsabilidades principais</label><div class="list-editor" id="cargo-ed-resp"></div><button class="mini-add" data-list="cargo-ed-resp" type="button">+ Adicionar responsabilidade</button></div><div class="am-field"><label>Perfil requerido</label><textarea id="cargo-ed-profile" rows="4"></textarea></div><div class="am-field"><label>Próximo nível</label><textarea id="cargo-ed-next" rows="4"></textarea></div><div class="am-field"><label>Habilidades técnicas</label><div class="list-editor" id="cargo-ed-tech"></div><button class="mini-add" data-list="cargo-ed-tech" type="button">+ Adicionar habilidade</button></div><div class="am-field"><label>Competências comportamentais</label><div class="list-editor" id="cargo-ed-comp"></div><button class="mini-add" data-list="cargo-ed-comp" type="button">+ Adicionar competência</button></div><div class="am-field full"><label>Treinamentos obrigatórios</label><div class="list-editor" id="cargo-ed-train"></div><button class="mini-add" data-list="cargo-ed-train" type="button">+ Adicionar treinamento</button></div></div></div><div class="am-actions"><button class="am-btn" type="button" id="cargo-ed-cancel">Cancelar</button><button class="am-btn primary" type="button" id="cargo-ed-save">Concluir</button></div></div>`;
+    document.body.appendChild(w);
+    w.querySelector('#cargo-modal-close').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-cancel').onclick=()=>w.classList.remove('open');
+    w.querySelector('#cargo-ed-save').onclick=saveCargoStructured;
+    w.querySelectorAll('.mini-add').forEach(b=>b.onclick=()=>addListRow(b.dataset.list,''));
+    return w;
+  }
+  function addListRow(id,val){ const box=document.getElementById(id); if(!box)return; const row=document.createElement('div'); row.className='list-editor-row'; row.innerHTML='<textarea rows="2">'+esc(val||'')+'</textarea><button class="mini-delete" type="button">Excluir</button>'; row.querySelector('button').onclick=()=>row.remove(); box.appendChild(row); }
+  function setList(id,items){ const box=document.getElementById(id); if(!box)return; box.innerHTML=''; (items&&items.length?items:['']).forEach(x=>addListRow(id,x)); }
+  function getList(id){ return [...(document.getElementById(id)?.querySelectorAll('textarea')||[])].map(x=>x.value.trim()).filter(Boolean); }
+  function openCargoStructured(card){
+    if(!isSupervisor()){alert('Seu perfil não permite editar descrições de cargo.');return;}
+    activeCargoCard=card; const w=cargoModal();
+    w.querySelector('#cargo-ed-title').value=card.querySelector('.cargo-title')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-report').value=card.querySelector('.cargo-report')?.textContent.trim()||'';
+    w.querySelector('#cargo-ed-mission').value=card.querySelector('.cargo-mission')?.textContent.trim()||'';
+    setList('cargo-ed-resp',[...card.querySelectorAll('.cargo-list')][0]?[...[...card.querySelectorAll('.cargo-list')][0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    const fichaTexts=[...card.querySelectorAll('.ficha-text')].map(x=>x.textContent.trim());
+    w.querySelector('#cargo-ed-profile').value=fichaTexts[0]||''; w.querySelector('#cargo-ed-next').value=fichaTexts[1]||'';
+    const compactLists=[...card.querySelectorAll('.cargo-list-compact')];
+    setList('cargo-ed-tech',compactLists[0]?[...compactLists[0].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-comp',compactLists[1]?[...compactLists[1].querySelectorAll('li')].map(li=>li.textContent.trim()):[]);
+    setList('cargo-ed-train',[...card.querySelectorAll('.ficha-chip')].map(x=>x.textContent.trim()));
+    w.classList.add('open');
+  }
+  function saveCargoStructured(){
+    const card=activeCargoCard; if(!card)return;
+    card.querySelector('.cargo-title').textContent=document.getElementById('cargo-ed-title').value.trim()||'Descrição de Cargo';
+    card.querySelector('.cargo-report').textContent=document.getElementById('cargo-ed-report').value.trim();
+    card.querySelector('.cargo-mission').textContent=document.getElementById('cargo-ed-mission').value.trim();
+    const lists=[...card.querySelectorAll('.cargo-list')]; if(lists[0]) lists[0].innerHTML=getList('cargo-ed-resp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const texts=[...card.querySelectorAll('.ficha-text')]; if(texts[0]) texts[0].textContent=document.getElementById('cargo-ed-profile').value.trim(); if(texts[1]) texts[1].textContent=document.getElementById('cargo-ed-next').value.trim();
+    const cl=[...card.querySelectorAll('.cargo-list-compact')]; if(cl[0]) cl[0].innerHTML=getList('cargo-ed-tech').map(x=>'<li>'+esc(x)+'</li>').join(''); if(cl[1]) cl[1].innerHTML=getList('cargo-ed-comp').map(x=>'<li>'+esc(x)+'</li>').join('');
+    const chips=card.querySelector('.ficha-chips'); if(chips) chips.innerHTML=getList('cargo-ed-train').map(x=>'<span class="ficha-chip">'+esc(x)+'</span>').join('');
+    document.getElementById('cargo-structured-modal').classList.remove('open');
+    saveCargoConfigOnline({silent:true});
+  }
+
+  const oldInit = window.initCargoCards || initCargoCards;
+  window.initCargoCards = initCargoCards = function(){
+    if(typeof oldInit==='function') oldInit();
+    document.querySelectorAll('.cargo-card').forEach((card,idx)=>{
+      if(!card.dataset.cargoEditId) card.dataset.cargoEditId='cargo-'+idx;
+      const head=card.querySelector('.cargo-head'); if(!head)return;
+      let actions=head.querySelector('.cargo-actions');
+      if(!actions){actions=document.createElement('div');actions.className='cargo-actions';head.appendChild(actions);} 
+      actions.innerHTML='<button class="cargo-action-btn" data-act="edit" type="button">Editar</button><button class="cargo-action-btn" data-act="print" type="button">Imprimir A4</button>';
+      actions.querySelector('[data-act="edit"]').onclick=(e)=>{e.stopPropagation();openCargoStructured(card);};
+      actions.querySelector('[data-act="print"]').onclick=(e)=>{e.stopPropagation();printCargoCard(card);};
+      if(!isSupervisor()) actions.querySelector('[data-act="edit"]').style.display='none';
+    });
+  };
+
+  // Imprimir descrição em 1 página, no mesmo padrão do diário
+  window.printCargoCard=function(card){
+    const d=extractCargoPrintData(card); const area=(d.sub.match(/Setor:\s*([^·]+)/i)?.[1]||'PCP / Logística Industrial').trim();
+    const mainRows=d.main.slice(0,8).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const profile=d.ficha.slice(0,2).map(x=>'<b>'+esc(x.label)+':</b> '+esc(x.text)).join('<br>')||'—';
+    const skillList=d.compact.slice(0,10).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Nenhum registro cadastrado.</li>';
+    const train=d.chips.slice(0,12).map(x=>'<span style="display:inline-block;border:1px solid #D9CDBA;padding:3px 6px;margin:2px 3px 2px 0;font-size:8.5px">'+esc(x)+'</span>').join('')||'—';
+    const html='<div class="barion-page one-page-print">'+printHeader('Descrição de Cargo — PCP e Logística Industrial')+'<div class="info-grid"><div class="info-box"><span class="label">Cargo / Função</span><div class="value">'+esc(d.title)+'</div></div><div class="info-box"><span class="label">Subordinação / Setor</span><div class="value">'+esc(d.sub)+'</div></div><div class="info-box"><span class="label">Área / Emissão</span><div class="value">'+esc(area)+' · '+new Date().toLocaleDateString('pt-BR')+'</div></div></div>'+sectionBlock('Missão da Função','<div class="section-content">'+esc(d.mission)+'</div>')+sectionBlock('Responsabilidades Principais','<div class="section-content"><ul class="compact-list">'+mainRows+'</ul></div>')+sectionBlock('Perfil Requerido / Próximo Nível','<div class="section-content">'+profile+'</div>')+sectionBlock('Habilidades e Competências','<div class="section-content"><ul class="compact-list">'+skillList+'</ul></div>')+sectionBlock('Treinamentos Obrigatórios','<div class="section-content">'+train+'</div>')+sectionBlock('Observações / Validação','<div class="section-content obs-box"></div>')+'<div class="signatures"><div class="sig">Colaborador</div><div class="sig">Gestor responsável</div></div><div class="doc-footer"><span>Barion Alimentos · PCP e Logística Industrial</span><span>Documento gerado pela Estrutura de Gestão PCP/Logística Industrial</span></div></div>';
+    openPrintWindow('Descrição de Cargo A4 Barion',html,'portrait');
+  };
+
+  // Compactação forçada de impressão para 1 página
+  const oldOpenPrint = window.openPrintWindow || openPrintWindow;
+  window.openPrintWindow = openPrintWindow = function(title,bodyHtml,orientation='portrait'){
+    const w=window.open('','_blank'); if(!w){alert('Libere pop-ups para imprimir.');return;}
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:A4 '+orientation+';margin:8mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#241205;margin:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.barion-page{width:100%;height:281mm;overflow:hidden;background:white;position:relative;padding-bottom:14mm}.doc-head{display:grid;grid-template-columns:145px 1fr 145px;border:1.4px solid #4B260C;height:54px;margin-bottom:12px}.doc-logo{display:flex;align-items:center;justify-content:center;border-right:1.4px solid #4B260C;padding:5px 10px}.doc-logo img{max-width:118px;max-height:34px;object-fit:contain}.doc-title{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#2b1507}.doc-meta{border-left:1.4px solid #4B260C;display:flex;align-items:center;justify-content:center;text-align:center;font-family:monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:#8b7b6a;line-height:1.3}.info-grid{display:grid;grid-template-columns:1.3fr .9fr .9fr;gap:10px;margin-bottom:10px}.info-box{border:1px solid #D9CDBA;min-height:48px;padding:7px 10px}.label{font-family:monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#9b8d80;margin-bottom:4px;display:block}.value{font-size:11px;font-weight:700;color:#211003;line-height:1.2}.section{margin-bottom:9px;border:1px solid #D9CDBA;break-inside:avoid}.section-title{height:22px;display:flex;align-items:center;border-bottom:1px solid #4B260C;color:#a8998c;font-family:monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;padding:0 10px}.section-content{padding:7px 10px;font-size:9.5px;line-height:1.32;min-height:26px}table{width:100%;border-collapse:collapse;font-size:8.6px}th{font-family:monospace;text-transform:uppercase;font-size:7px;letter-spacing:.06em;color:#211003;background:#F7F2EB;text-align:left}th,td{border:1px solid #D9CDBA;padding:4.5px 6px;vertical-align:top}td b{font-size:8.8px}.check-grid{display:grid;grid-template-columns:1fr 1fr}.check-item{border-bottom:1px solid #E6DDD1;padding:5px 9px;font-size:8.8px;display:flex;gap:7px;align-items:flex-start}.box{width:11px;height:11px;border:1.2px solid #4B260C;display:inline-block;flex:0 0 11px}.obs-box{height:52px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:45px;margin:22px 0 0}.sig{text-align:center;font-size:8px;color:#8b7b6a}.sig::before{content:"";display:block;border-top:1.2px solid #4B260C;margin-bottom:6px}.doc-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #D9CDBA;padding-top:5px;display:flex;justify-content:space-between;font-family:monospace;font-size:7px;color:#8b7b6a;letter-spacing:.04em}.compact-list{margin:0;padding-left:13px}.compact-list li{margin-bottom:3px;line-height:1.25;font-size:9px}@media print{.barion-page{page-break-after:avoid}}</style></head><body>'+bodyHtml+'</body></html>');
+    w.document.close(); setTimeout(()=>{w.focus();w.print();},350);
+  };
+
+  function initPatch(){
+    removeUnwantedVisuals(); addOrgAddButton(); addEditBadges(); ensureDiaryPrintName();
+    if(!defaultOrgHtml){
+      const oc=document.querySelector('#mt-organograma .org-container'); if(oc) defaultOrgHtml=oc.innerHTML;
+    }
+    try{initCargoCards();}catch(e){}
+  }
+  // Limpa versões locais antigas que trouxeram organograma incompleto.
+  localStorage.removeItem('org-config');
+  localStorage.removeItem('org-config-v3');
+  document.addEventListener('DOMContentLoaded',initPatch);
+  setTimeout(initPatch,250);
+  setTimeout(initPatch,900);
+})();
 </script>
 
 </body>
