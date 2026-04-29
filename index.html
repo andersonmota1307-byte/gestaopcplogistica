@@ -521,7 +521,7 @@ body.org-edit-mode .node .node-meta{outline:1px dashed rgba(184,76,30,.45);backg
       <input id="auth-email" type="email" autocomplete="username" placeholder="seu.email@empresa.com" required>
       <label for="auth-password">Senha</label>
       <input id="auth-password" type="password" autocomplete="current-password" placeholder="••••••••" required>
-      <button class="auth-btn" id="auth-login-btn" type="submit">Entrar</button>
+      <button class="auth-btn" id="auth-login-btn" type="submit" onclick="event.preventDefault(); loginSistema();">Entrar</button>
       <div class="auth-msg" id="auth-msg"></div>
     </form>
   </div>
@@ -2717,7 +2717,7 @@ const SB_TABLE = 'diarios_bordo';
 // ATENÇÃO: use somente a ANON PUBLIC KEY. Nunca use service_role.
 // Para deixar 100% automático para todos, substitua o texto COLE_AQUI... pela sua anon public key.
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL_FIXO = 'https://oujxxiqvkqjgxobhvrsm.supabase.co';
+const SUPABASE_URL_FIXO = 'https://oujxxiqvkqjqxobhvrsm.supabase.co';
 const SUPABASE_ANON_KEY_FIXA = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91anh4aXF2a3FqcXhvYmh2cnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDYyMTUsImV4cCI6MjA5Mjk4MjIxNX0.mVnlUOUNJUPqq9upkWmVfv-HkB5z52DxSBgXXW9jhMg';
 
 let sbClient = null;
