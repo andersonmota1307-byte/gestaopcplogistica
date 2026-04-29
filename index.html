@@ -1,0 +1,2547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organograma — PCP e Logística Industrial · Barion Alimentos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --brown:#3D1F0D;--brown-mid:#6B3A1F;--brown-light:#C4956A;
+    --cream:#F7F2EB;--cream-dark:#EDE5D8;--cream-mid:#D9CDBA;
+    --text:#1A0F06;--text-muted:#7A6550;
+    --accent:#B84C1E;--accent-light:#F0D5C8;
+    --green:#2D5016;--green-light:#C8DDB8;
+    --blue:#1A3A5C;--blue-light:#C8D8EC;
+    --amber:#7A4A00;--amber-light:#F0DFB0;
+    --purple:#3D1A6E;--purple-light:#E0D4F5;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:auto;}
+
+  .header{background:var(--brown);color:var(--cream);padding:32px 48px 28px;position:relative;overflow:hidden;}
+  .header::before{content:'';position:absolute;top:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:var(--brown-mid);opacity:0.4;}
+  .hl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--brown-light);text-transform:uppercase;margin-bottom:8px;}
+  .header h1{font-family:'DM Serif Display',serif;font-size:26px;font-weight:400;position:relative;z-index:1;margin-bottom:4px;}
+  .hsub{font-size:12px;color:var(--cream-mid);font-weight:300;position:relative;z-index:1;}
+  .hmeta{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;}
+  .chip{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:3px 10px;font-size:10px;font-family:'DM Mono',monospace;}
+
+  .controls{padding:14px 48px;background:white;border-bottom:1px solid var(--cream-dark);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .ctrl-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--text-muted);text-transform:uppercase;margin-right:6px;}
+  .filter-btn{font-size:11px;font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:4px;border:1px solid var(--cream-dark);background:white;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+  .filter-btn:hover{background:var(--cream);color:var(--text);}
+  .filter-btn.active{background:var(--brown);color:white;border-color:var(--brown);}
+
+  .org-container{padding:36px 24px 40px;min-width:1320px;}
+
+  /* MODO VISUAL 1 PÁGINA — organograma mais compacto e alinhado */
+  .org-container.one-page{min-width:0;max-width:1180px;margin:0 auto;padding:22px 18px 26px;}
+  .org-container.one-page .level{margin-bottom:22px;}
+  .org-container.one-page .level::after{bottom:-16px;height:16px;}
+  .org-container.one-page .supervisors-row{gap:32px;}
+  .org-container.one-page .areas-row{gap:24px;padding-top:28px;align-items:flex-start;}
+  .org-container.one-page .areas-row::before{height:14px;}
+  .org-container.one-page .areas-row::after{top:14px;}
+  .org-container.one-page .area-column{min-width:235px;gap:10px;}
+  .org-container.one-page .area-column::before{top:-14px;height:14px;}
+  .org-container.one-page .area-header{font-size:9px;padding:4px 11px;letter-spacing:.1em;}
+  .org-container.one-page .node{min-width:170px;padding:7px 10px;border-radius:7px;}
+  .org-container.one-page .node-role{font-size:8px;margin-bottom:3px;}
+  .org-container.one-page .node-name{font-size:12px;}
+  .org-container.one-page .node-meta{font-size:9px;}
+  .org-container.one-page .turno-header{font-size:8px;margin-top:2px;margin-bottom:-3px;}
+  .org-container.one-page .sub-column{gap:6px;}
+  .area-column[data-area-column="expedicao"] > .turno-header{display:none;}
+
+  @media print{
+    @page{size:A4 landscape;margin:8mm;}
+    .header,.main-tabs,.controls,.stats,.legend,.footer{display:none!important;}
+    body{background:white;}
+    .main-tab-content{display:block!important;}
+    .main-tab-content:not(#mt-organograma){display:none!important;}
+    .org-container{min-width:0!important;max-width:100%!important;padding:0!important;}
+    .org-container .level{margin-bottom:18px!important;}
+    .org-container .areas-row{gap:18px!important;padding-top:24px!important;}
+    .org-container .area-column{min-width:210px!important;gap:7px!important;}
+    .org-container .node{min-width:145px!important;padding:6px 8px!important;break-inside:avoid;}
+    .org-container .node-role{font-size:7px!important;}
+    .org-container .node-name{font-size:10px!important;}
+    .org-container .node-meta{font-size:8px!important;}
+    .org-container .area-header{font-size:8px!important;padding:3px 9px!important;}
+    .org-container .turno-header{font-size:7px!important;margin-top:1px!important;}
+  }
+
+
+  .level{display:flex;justify-content:center;gap:16px;position:relative;margin-bottom:36px;}
+  .level:last-child{margin-bottom:0;}
+  .level::after{content:'';position:absolute;bottom:-22px;left:50%;width:2px;height:22px;background:var(--cream-mid);}
+  .level:last-child::after{display:none;}
+
+  .node{background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:10px 14px;min-width:180px;text-align:center;position:relative;transition:all 0.2s;cursor:pointer;}
+  .node:hover{border-color:var(--brown-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(61,31,13,0.08);}
+  .node-role{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;}
+  .node-name{font-size:13px;font-weight:500;color:var(--text);}
+  .node-meta{font-size:10px;color:var(--text-muted);margin-top:2px;}
+
+  .node.leadership{background:var(--brown);color:var(--cream);border-color:var(--brown);}
+  .node.leadership .node-role{color:var(--brown-light);}
+  .node.leadership .node-name{color:var(--cream);}
+
+  .node.supervisor{background:var(--brown-mid);color:var(--cream);border-color:var(--brown-mid);}
+  .node.supervisor .node-role{color:var(--brown-light);}
+  .node.supervisor .node-name{color:var(--cream);}
+
+  .node.pcp{background:#E6F1FB;border-color:#378ADD;}
+  .node.pcp .node-role{color:#185FA5;}
+  .node.pcp .node-name{color:#042C53;}
+
+  .node.almox{background:#EAF3DE;border-color:#639922;}
+  .node.almox .node-role{color:#3B6D11;}
+  .node.almox .node-name{color:#173404;}
+
+  .node.expedicao{background:#FAEEDA;border-color:#BA7517;}
+  .node.expedicao .node-role{color:#854F0B;}
+  .node.expedicao .node-name{color:#412402;}
+
+  .node.turno-1{border-left:3px solid var(--blue);}
+  .node.turno-2{border-left:3px solid var(--amber);}
+  .node.turno-3{border-left:3px solid var(--purple);}
+  .node.adm{border-left:3px solid var(--text-muted);}
+
+  .node.hidden{display:none;}
+
+  .node.bridge{background:#F5E8DC;border:2px dashed var(--accent);}
+  .node.bridge .node-role{color:var(--accent);}
+  .node.bridge .node-name{color:var(--brown);}
+
+  .supervisors-row{display:flex;justify-content:center;gap:60px;position:relative;}
+
+  .areas-row{display:flex;justify-content:center;gap:40px;align-items:flex-start;position:relative;padding-top:40px;}
+  .areas-row::before{content:'';position:absolute;top:0;left:50%;width:2px;height:20px;background:var(--cream-mid);}
+  .areas-row::after{content:'';position:absolute;top:20px;left:0;right:0;height:2px;background:var(--cream-mid);}
+
+  .area-column{display:flex;flex-direction:column;align-items:center;gap:16px;position:relative;min-width:280px;}
+  .area-column::before{content:'';position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--cream-mid);}
+
+  .area-header{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 14px;border-radius:3px;font-weight:500;}
+  .area-header.pcp{background:#185FA5;color:white;}
+  .area-header.almox{background:#3B6D11;color:white;}
+  .area-header.expedicao{background:#854F0B;color:white;}
+
+  .turno-header{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-top:6px;margin-bottom:-4px;}
+
+  .sub-column{display:flex;flex-direction:column;gap:8px;align-items:center;width:100%;}
+
+  .bridge-indicator{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px;margin-bottom:-8px;}
+  .bridge-indicator::before{content:'';width:18px;height:2px;background:var(--accent);display:inline-block;}
+
+  .stats{padding:20px 48px;background:var(--cream-dark);display:flex;gap:32px;flex-wrap:wrap;}
+  .stat{display:flex;flex-direction:column;gap:2px;}
+  .stat-num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--brown);line-height:1;}
+  .stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);}
+
+  .legend{padding:14px 48px;background:white;border-top:1px solid var(--cream-dark);display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);}
+  .legend-dot{width:10px;height:10px;border-radius:2px;}
+
+  .modal-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);opacity:0;pointer-events:none;transition:opacity 0.2s;z-index:100;}
+  .modal-backdrop.open{opacity:1;pointer-events:all;}
+  .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.95);background:white;border-radius:10px;padding:28px;min-width:320px;max-width:440px;box-shadow:0 10px 40px rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:all 0.2s;z-index:101;}
+  .modal.open{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1);}
+  .modal-role{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .modal-name{font-family:'DM Serif Display',serif;font-size:22px;color:var(--brown);margin-bottom:14px;}
+  .modal-info{font-size:12px;color:var(--text);line-height:1.6;}
+  .modal-info strong{color:var(--text-muted);display:inline-block;min-width:90px;font-weight:500;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;}
+  .modal-close{position:absolute;top:12px;right:14px;background:transparent;border:0;font-size:20px;color:var(--text-muted);cursor:pointer;padding:4px 8px;border-radius:4px;line-height:1;}
+  .modal-close:hover{background:var(--cream);color:var(--text);}
+
+  .footer{background:var(--brown);padding:14px 48px;display:flex;justify-content:space-between;align-items:center;color:var(--cream-mid);}
+  .ft{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;}
+
+  /* ═══════════════════════════════════════════════ */
+  /* ABAS PRINCIPAIS                                 */
+  /* ═══════════════════════════════════════════════ */
+  .main-tabs{background:white;border-bottom:1px solid var(--cream-dark);padding:0 48px;display:flex;gap:0;}
+  .main-tab{background:transparent;border:0;padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;position:relative;display:flex;align-items:center;gap:8px;border-bottom:3px solid transparent;transition:all 0.15s;}
+  .main-tab:hover{color:var(--text);}
+  .main-tab.active{color:var(--brown);border-bottom-color:var(--accent);}
+  .mt-icon{font-size:14px;color:var(--accent);}
+  .main-tab-content{display:none;}
+  .main-tab-content.active{display:block;}
+
+  /* ═══════════════════════════════════════════════ */
+  /* ABA CARGOS                                      */
+  /* ═══════════════════════════════════════════════ */
+  .cargos-controls{padding:14px 48px;background:white;border-bottom:1px solid var(--cream-dark);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .cargo-filter{font-size:11px;font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:4px;border:1px solid var(--cream-dark);background:white;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+  .cargo-filter:hover{background:var(--cream);color:var(--text);}
+  .cargo-filter.active{background:var(--brown);color:white;border-color:var(--brown);}
+
+  .cargos-container{padding:32px 48px 40px;max-width:1100px;margin:0 auto;}
+
+  .cargo-section{margin-bottom:28px;}
+  .cargo-section.hidden{display:none;}
+  .cargo-section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--cream-dark);}
+
+  .cargo-card{background:white;border:1px solid var(--cream-dark);border-radius:10px;padding:0;margin-bottom:12px;overflow:hidden;transition:all 0.15s;}
+  .cargo-card:hover{box-shadow:0 4px 14px rgba(61,31,13,0.06);}
+  .cargo-card.hidden{display:none;}
+
+  .cargo-head{padding:14px 20px 12px;border-bottom:1px solid var(--cream-dark);position:relative;}
+  .cargo-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:3px 8px;border-radius:3px;margin-bottom:6px;}
+  .cargo-title{font-family:'DM Serif Display',serif;font-size:19px;font-weight:400;color:var(--brown);line-height:1.2;margin-bottom:6px;}
+  .cargo-report{font-size:11px;color:var(--text-muted);}
+  .cargo-report strong{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-right:4px;font-weight:500;}
+
+  .cargo-body{padding:14px 20px 16px;}
+  .cargo-mission{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;padding-left:12px;border-left:3px solid var(--accent);}
+  .cargo-resp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .cargo-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .cargo-list li{font-size:12px;color:var(--text);line-height:1.5;padding-left:14px;position:relative;}
+  .cargo-list li::before{content:'→';position:absolute;left:0;color:var(--text-muted);}
+
+  /* Formal ficha structure */
+  .ficha-section{margin-top:16px;}
+  .ficha-section:first-of-type{margin-top:0;}
+  .ficha-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--cream-dark);}
+  .ficha-text{font-size:12px;color:var(--text);line-height:1.6;}
+  .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}
+  .cargo-list-compact{list-style:none;display:flex;flex-direction:column;gap:3px;}
+  .cargo-list-compact li{font-size:11px;color:var(--text);line-height:1.45;padding-left:12px;position:relative;}
+  .cargo-list-compact li::before{content:'•';position:absolute;left:0;color:var(--text-muted);}
+  .ficha-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .ficha-chip{font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:3px;background:var(--cream);color:var(--text-muted);border:1px solid var(--cream-dark);}
+
+  /* Cores dos cards de cargo por área */
+  .cargo-card.c-leader .cargo-head{background:var(--brown);}
+  .cargo-card.c-leader .cargo-title{color:var(--cream);}
+  .cargo-card.c-leader .cargo-tag{background:var(--brown-mid);color:var(--brown-light);}
+  .cargo-card.c-leader .cargo-report{color:var(--cream-mid);}
+  .cargo-card.c-leader .cargo-report strong{color:var(--brown-light);}
+
+  .cargo-card.c-bridge .cargo-head{background:#F5E8DC;border-bottom:2px dashed var(--accent);}
+  .cargo-card.c-bridge .cargo-tag{background:var(--accent);color:white;}
+
+  .cargo-card.c-pcp .cargo-head{background:#E6F1FB;}
+  .cargo-card.c-pcp .cargo-title{color:#042C53;}
+  .cargo-card.c-pcp .cargo-tag{background:#185FA5;color:white;}
+  .cargo-card.c-pcp .cargo-mission{border-left-color:#185FA5;}
+
+  .cargo-card.c-almox .cargo-head{background:#EAF3DE;}
+  .cargo-card.c-almox .cargo-title{color:#173404;}
+  .cargo-card.c-almox .cargo-tag{background:#3B6D11;color:white;}
+  .cargo-card.c-almox .cargo-mission{border-left-color:#3B6D11;}
+
+  .cargo-card.c-expedicao .cargo-head{background:#FAEEDA;}
+  .cargo-card.c-expedicao .cargo-title{color:#412402;}
+  .cargo-card.c-expedicao .cargo-tag{background:#854F0B;color:white;}
+  .cargo-card.c-expedicao .cargo-mission{border-left-color:#854F0B;}
+
+  @media(max-width:900px){
+    .header,.controls,.stats,.legend,.footer,.main-tabs,.cargos-controls,.cargos-container{padding-left:20px;padding-right:20px;}
+    .ficha-grid{grid-template-columns:1fr;gap:12px;}
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* ABA DIÁRIOS DE BORDO                            */
+  /* ═══════════════════════════════════════════════ */
+  .diarios-controls{padding:14px 48px;background:white;border-bottom:1px solid var(--cream-dark);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .diario-filter{font-size:11px;font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:4px;border:1px solid var(--cream-dark);background:white;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+  .diario-filter:hover{background:var(--cream);color:var(--text);}
+  .diario-filter.active{background:var(--brown);color:white;border-color:var(--brown);}
+
+  .diarios-container{padding:32px 48px 40px;max-width:1100px;margin:0 auto;}
+  .diario-card-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+
+  .diario-list-card{background:white;border:1px solid var(--cream-dark);border-radius:8px;padding:14px 16px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:6px;position:relative;}
+  .diario-list-card:hover{border-color:var(--brown-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(61,31,13,0.08);}
+  .diario-list-card.hidden{display:none;}
+
+  .dlc-area-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 7px;border-radius:3px;align-self:flex-start;}
+  .dlc-area-tag.lideranca{background:var(--brown);color:var(--cream);}
+  .dlc-area-tag.pcp{background:#185FA5;color:white;}
+  .dlc-area-tag.almox{background:#3B6D11;color:white;}
+  .dlc-area-tag.expedicao{background:#854F0B;color:white;}
+
+  .dlc-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.3;}
+  .dlc-sub{font-size:11px;color:var(--text-muted);}
+  .dlc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-dark);}
+  .dlc-status{display:flex;align-items:center;gap:5px;font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);}
+  .dlc-status-dot{width:6px;height:6px;border-radius:50%;background:var(--cream-mid);}
+  .dlc-status-dot.active{background:#1B5E20;}
+  .dlc-action{font-size:11px;color:var(--accent);font-weight:500;}
+
+  /* ═══ MODAL DO DIÁRIO ═══ */
+  .diario-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:opacity 0.2s;z-index:200;}
+  .diario-backdrop.open{opacity:1;pointer-events:all;}
+
+  .diario-modal{position:fixed;top:20px;left:20px;right:20px;bottom:20px;background:var(--cream);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);opacity:0;pointer-events:none;transition:all 0.25s;z-index:201;display:flex;flex-direction:column;overflow:hidden;transform:scale(0.98);}
+  .diario-modal.open{opacity:1;pointer-events:all;transform:scale(1);}
+
+  .diario-header{background:var(--brown);color:var(--cream);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-shrink:0;}
+  .diario-role{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--brown-light);margin-bottom:3px;}
+  .diario-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:var(--cream);line-height:1.2;}
+  .diario-actions{display:flex;gap:8px;flex-shrink:0;}
+
+  .dm-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:all 0.15s;}
+  .dm-btn-ghost{background:transparent;color:var(--cream);border-color:rgba(255,255,255,0.3);}
+  .dm-btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:var(--cream);}
+  .dm-btn-close{background:var(--cream);color:var(--brown);border-color:var(--cream);}
+  .dm-btn-close:hover{background:white;}
+  .dm-btn-save{background:var(--accent);color:white;border-color:var(--accent);padding:10px 20px;font-size:13px;}
+  .dm-btn-save:hover{background:#9a3f18;}
+
+  .diario-body{flex:1;overflow-y:auto;padding:24px 28px;}
+
+  .dm-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--cream-dark);}
+  .dm-tabs{display:flex;gap:4px;background:white;border-radius:6px;padding:3px;border:1px solid var(--cream-dark);}
+  .dm-tab{background:transparent;border:0;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:6px 14px;border-radius:4px;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+  .dm-tab:hover:not(.active){color:var(--text);}
+  .dm-tab.active{background:var(--brown);color:var(--cream);}
+
+  .dm-toolbar-info{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--cream-mid);}
+  .dm-toolbar-info.saved .status-dot{background:#1B5E20;}
+  .dm-toolbar-info.unsaved .status-dot{background:var(--accent);}
+
+  .dm-mode{display:none;}
+  .dm-mode.active{display:block;}
+
+  /* Modo Visualizar */
+  .dm-view-section{margin-bottom:22px;}
+  .dm-view-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--cream-dark);}
+  .dm-view-text{font-size:13px;color:var(--text);line-height:1.6;background:white;border:1px solid var(--cream-dark);border-radius:6px;padding:12px 14px;white-space:pre-wrap;}
+
+  .dm-view-grid{display:flex;flex-direction:column;gap:6px;}
+  .dm-view-row{display:flex;gap:12px;background:white;border:1px solid var(--cream-dark);border-radius:6px;padding:10px 14px;align-items:flex-start;}
+  .dm-view-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--brown);font-weight:500;min-width:100px;padding-top:2px;white-space:nowrap;}
+  .dm-view-activity{flex:1;}
+  .dm-view-activity-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+  .dm-view-activity-desc{font-size:11px;color:var(--text-muted);line-height:1.5;}
+
+  .dm-view-list{display:flex;flex-direction:column;gap:6px;}
+  .dm-view-item{background:white;border:1px solid var(--cream-dark);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;}
+  .dm-view-freq{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;background:var(--cream);color:var(--text-muted);padding:2px 7px;border-radius:3px;flex-shrink:0;margin-top:2px;}
+
+  .dm-checklist{display:flex;flex-direction:column;gap:4px;}
+  .dm-check-item{display:flex;gap:10px;background:white;border:1px solid var(--cream-dark);border-radius:6px;padding:8px 12px;align-items:center;}
+  .dm-check-box{width:16px;height:16px;border:1.5px solid var(--cream-mid);border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+  .dm-check-box.checked{background:var(--green);border-color:var(--green);}
+  .dm-check-box.checked::after{content:'✓';color:white;font-size:11px;font-weight:bold;}
+  .dm-check-label{font-size:12px;color:var(--text);flex:1;}
+  .dm-check-item.done .dm-check-label{text-decoration:line-through;color:var(--text-muted);}
+
+  .dm-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:10px;text-align:center;background:white;border:1px dashed var(--cream-dark);border-radius:6px;}
+
+  /* Modo Editar */
+  .dm-edit-section{margin-bottom:20px;}
+  .dm-label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-weight:500;}
+  .dm-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .dm-label-row .dm-label{margin-bottom:0;}
+
+  .dm-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:white;border:1px solid var(--cream-dark);border-radius:5px;padding:10px 12px;resize:vertical;transition:border-color 0.15s;}
+  .dm-input:focus{outline:none;border-color:var(--brown-light);}
+
+  .dm-mini-btn{background:var(--accent-light);color:var(--accent);border:1px solid transparent;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all 0.15s;}
+  .dm-mini-btn:hover{background:var(--accent);color:white;}
+
+  .dm-rows{display:flex;flex-direction:column;gap:6px;}
+  .dm-row{background:white;border:1px solid var(--cream-dark);border-radius:6px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;}
+  .dm-row-fields{flex:1;display:grid;grid-template-columns:100px 1fr 1.5fr;gap:8px;}
+  .dm-row-fields.weekly{grid-template-columns:110px 1fr 1.5fr;}
+  .dm-row-fields.checklist{grid-template-columns:1fr;}
+  .dm-row input, .dm-row textarea{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);background:var(--cream);border:1px solid var(--cream-dark);border-radius:4px;padding:6px 9px;width:100%;}
+  .dm-row input:focus, .dm-row textarea:focus{outline:none;border-color:var(--brown-light);background:white;}
+  .dm-row-remove{background:transparent;color:var(--text-muted);border:0;cursor:pointer;font-size:18px;padding:0 6px;line-height:1;}
+  .dm-row-remove:hover{color:var(--accent);}
+
+  .dm-save-bar{display:flex;gap:10px;margin-top:26px;padding-top:18px;border-top:1px solid var(--cream-dark);}
+  .dm-save-bar .dm-btn-ghost{background:transparent;color:var(--text-muted);border-color:var(--cream-dark);}
+  .dm-save-bar .dm-btn-ghost:hover{background:var(--cream);color:var(--text);border-color:var(--cream-mid);}
+
+  @media(max-width:640px){
+    .diario-modal{top:0;left:0;right:0;bottom:0;border-radius:0;}
+    .diario-header{padding:14px 18px;}
+    .diario-title{font-size:18px;}
+    .diario-body{padding:16px 18px;}
+    .dm-row-fields{grid-template-columns:1fr;}
+    .diarios-controls,.diarios-container{padding-left:20px;padding-right:20px;}
+  }
+
+
+
+  /* ═══════════════════════════════════════════════ */
+  /* SUPABASE · USO COMPARTILHADO DOS DIÁRIOS        */
+  /* ═══════════════════════════════════════════════ */
+  .supabase-panel{margin:14px 48px 0;background:white;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;}
+  .supabase-panel summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--brown);display:flex;justify-content:space-between;align-items:center;}
+  .supabase-panel summary::-webkit-details-marker{display:none;}
+  .supabase-grid{padding:0 16px 16px;display:grid;grid-template-columns:1.2fr 1.2fr .8fr auto auto;gap:8px;align-items:end;}
+  .supabase-field label{display:block;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;}
+  .supabase-field input{width:100%;font-family:'DM Sans',sans-serif;font-size:12px;border:1px solid var(--cream-dark);border-radius:5px;padding:8px 10px;background:var(--cream);color:var(--text);}
+  .supabase-field input:focus{outline:none;border-color:var(--brown-light);background:white;}
+  .supabase-status{font-size:11px;color:var(--text-muted);padding:0 16px 14px;}
+  .supabase-status.ok{color:#1B5E20;}
+  .supabase-status.warn{color:var(--accent);}
+  .dm-btn-online{background:#1B5E20;color:white;border-color:#1B5E20;}
+  .dm-btn-online:hover{background:#144416;}
+  @media(max-width:900px){.supabase-panel{margin-left:20px;margin-right:20px}.supabase-grid{grid-template-columns:1fr;}}
+
+  @media print {
+    .main-tabs,.diarios-controls,.diario-actions,.dm-toolbar,.dm-mode#dm-edit-mode,.dm-mini-btn{display:none !important;}
+    .diario-modal{position:static;box-shadow:none;border-radius:0;}
+    .diario-header{background:white !important;color:var(--brown) !important;}
+    .diario-role,.diario-title{color:var(--brown) !important;}
+    .dm-mode{display:block !important;}
+    .dm-view-section{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hl">Organograma · PCP e Logística Industrial</div>
+  <h1>Estrutura da Área</h1>
+  <div class="hsub">Barion Alimentos · Anderson Mota — Supervisor</div>
+  <div class="hmeta">
+    <span class="chip">18 colaboradores</span>
+    <span class="chip">3 áreas integradas</span>
+    <span class="chip">3 suportes diretos</span>
+    <span class="chip">Lesly — Analista</span>
+  </div>
+</div>
+
+<!-- SISTEMA DE ABAS PRINCIPAIS -->
+<div class="main-tabs">
+  <button class="main-tab active" onclick="showMainTab('organograma')">
+    <span class="mt-icon">◐</span>
+    <span>Organograma</span>
+  </button>
+  <button class="main-tab" onclick="showMainTab('cargos')">
+    <span class="mt-icon">◑</span>
+    <span>Descrição de cargos</span>
+  </button>
+  <button class="main-tab" onclick="showMainTab('diarios')">
+    <span class="mt-icon">◓</span>
+    <span>Diários de bordo</span>
+  </button>
+</div>
+
+<!-- ========================================= -->
+<!-- ABA 1: ORGANOGRAMA (CONTEÚDO ORIGINAL)   -->
+<!-- ========================================= -->
+<div class="main-tab-content active" id="mt-organograma">
+
+<div class="controls">
+  <span class="ctrl-label">Filtrar:</span>
+  <button class="filter-btn active" data-filter="all">Toda estrutura</button>
+  <button class="filter-btn" data-filter="pcp">PCP</button>
+  <button class="filter-btn" data-filter="almox">Almoxarifado</button>
+  <button class="filter-btn" data-filter="expedicao">Expedição</button>
+  <button class="filter-btn" data-filter="lideranca">Liderança</button>
+  <button class="filter-btn" type="button" onclick="toggleOnePageOrg()" id="one-page-btn" style="margin-left:12px;">Visual 1 página</button>
+  <button class="filter-btn" type="button" onclick="printFilteredOrg()">Imprimir filtro</button>
+  <button class="filter-btn" type="button" onclick="exportFilteredOrgImage()">Exportar imagem</button>
+  <span class="ctrl-label" style="margin-left:16px;">Clique em qualquer cargo para ver detalhes</span>
+</div>
+
+<div class="org-container">
+
+  <div class="level">
+    <div class="node leadership" data-group="lideranca pcp almox expedicao" data-role="Diretor Industrial" data-name="Alexandre Barion" data-reports="Acionista / Board" data-area="Direção geral da indústria">
+      <div class="node-role">Diretor Industrial</div>
+      <div class="node-name">Alexandre Barion</div>
+    </div>
+  </div>
+
+  <div class="level">
+    <div class="node leadership" data-group="lideranca pcp almox expedicao" data-role="Gerente Industrial" data-name="Edimara Santos" data-reports="Alexandre Barion" data-area="Gerência industrial — Produção, PCP, Manutenção, Qualidade">
+      <div class="node-role">Gerente Industrial</div>
+      <div class="node-name">Edimara Santos</div>
+    </div>
+  </div>
+
+  <div class="level">
+    <div class="supervisors-row" style="width:100%;">
+      <div class="node supervisor" data-group="lideranca pcp almox expedicao" data-role="Supervisor de PCP e Logística Industrial" data-name="Anderson Mota" data-reports="Edimara Santos" data-area="PCP e Almoxarifado — supervisão direta. Coordenação da cadeia interna integrada.">
+        <div class="node-role">Supervisor PCP e Logística Industrial</div>
+        <div class="node-name">Anderson Mota</div>
+      </div>
+      <div class="node supervisor" data-group="lideranca expedicao" data-role="Supervisor de Logística Industrial" data-name="Antônio Coelho" data-reports="Edimara Santos · Coordena com Anderson Mota" data-area="Expedição — supervisão direta. Transferências CD, carregamentos, devoluções e requisições.">
+        <div class="node-role">Supervisor Logística Industrial</div>
+        <div class="node-name">Antônio Coelho</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="level">
+    <div class="node bridge" data-group="pcp almox" data-role="Analista de PCP" data-name="Lesly Schmoller" data-reports="Anderson Mota" data-area="Analista — atua nas duas pontas: Gestão de Materiais (PCP) e Controle de Estoque (Almoxarifado). Sucessora em desenvolvimento.">
+      <div class="node-role">Analista de PCP</div>
+      <div class="node-name">Lesly Schmoller</div>
+      <div class="node-meta">Gestão de Materiais ↔ Controle de Estoque</div>
+    </div>
+  </div>
+
+  <div class="areas-row">
+
+    <div class="area-column" data-area-column="pcp">
+      <div class="area-header pcp">PCP · Controle de Produção</div>
+      <div class="node pcp adm" data-group="pcp" data-role="Assistente de PCP" data-name="João Araújo" data-reports="Anderson Mota" data-area="Programação e Controle de Produção — ADM">
+        <div class="node-role">Assistente de PCP · ADM</div>
+        <div class="node-name">João Araújo</div>
+        <div class="node-meta">Programação e Controle de Produção</div>
+      </div>
+      <div class="turno-header">Turnos operacionais</div>
+      <div class="sub-column">
+        <div class="node pcp turno-1" data-group="pcp" data-role="Assistente de PCP · 1º Turno" data-name="Adrianyela Valentina" data-reports="João Araújo" data-area="Apontamentos e relatórios hora/hora">
+          <div class="node-role">Assistente de PCP · 1º Turno</div>
+          <div class="node-name">Adrianyela Valentina</div>
+        </div>
+        <div class="node pcp turno-2" data-group="pcp" data-role="Assistente de PCP · 2º Turno" data-name="Franciane Pieczak" data-reports="João Araújo" data-area="Apontamentos e relatórios hora/hora">
+          <div class="node-role">Assistente de PCP · 2º Turno</div>
+          <div class="node-name">Franciane Pieczak</div>
+        </div>
+        <div class="node pcp turno-3" data-group="pcp" data-role="Assistente de PCP · 3º Turno" data-name="Eduardo Jose" data-reports="João Araújo" data-area="Apontamentos e relatórios hora/hora">
+          <div class="node-role">Assistente de PCP · 3º Turno</div>
+          <div class="node-name">Eduardo Jose</div>
+        </div>
+      </div>
+      <div class="turno-header">Formação</div>
+      <div class="sub-column">
+        <div class="node pcp adm" data-group="pcp" data-role="Aprendiz de PCP" data-name="João Pedro" data-reports="João Araújo" data-area="Aprendizagem e apoio ao time de PCP">
+          <div class="node-role">Aprendiz de PCP · ADM</div>
+          <div class="node-name">João Pedro</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="area-column" data-area-column="almox">
+      <div class="area-header almox">Almoxarifado · Controle de Estoque</div>
+      <div class="node almox adm" data-group="almox" data-role="Assistente de Estoque" data-name="Hagta Chagas" data-reports="Anderson Mota · Acompanhamento técnico: Lesly Schmoller" data-area="Controle de estoque, WMS, acuracidade e consumo extra">
+        <div class="node-role">Assistente de Estoque · ADM</div>
+        <div class="node-name">Hagta Chagas</div>
+        <div class="node-meta">Controle de Estoque</div>
+      </div>
+      <div class="turno-header">Recebimento e organização (ADM)</div>
+      <div class="sub-column">
+        <div class="node almox adm" data-group="almox" data-role="Conferente de Recebimento" data-name="Hélio Matheus" data-reports="Hagta Chagas" data-area="Recebimento de materiais — conferência de NF e entrada no sistema">
+          <div class="node-role">Conferente Recebimento · ADM</div>
+          <div class="node-name">Hélio Matheus</div>
+        </div>
+        <div class="node almox adm" data-group="almox" data-role="Conferente de Organização" data-name="Edmilson Lima" data-reports="Hagta Chagas" data-area="Organização, devoluções e controle de endereçamento">
+          <div class="node-role">Conferente Organização · ADM</div>
+          <div class="node-name">Edmilson Lima</div>
+        </div>
+      </div>
+      <div class="turno-header">Apontamento (turnos)</div>
+      <div class="sub-column">
+        <div class="node almox turno-1" data-group="almox" data-role="Conferente de Apontamento · 1º Turno" data-name="Gabriel Rypchinski" data-reports="Hagta Chagas" data-area="Apontamento de PA e PI — 1º turno">
+          <div class="node-role">Conferente Apontamento · 1ºT</div>
+          <div class="node-name">Gabriel Rypchinski</div>
+        </div>
+        <div class="node almox turno-2" data-group="almox" data-role="Conferente de Apontamento · 2º Turno" data-name="Pablo José" data-reports="Hagta Chagas" data-area="Apontamento de PA e PI — 2º turno">
+          <div class="node-role">Conferente Apontamento · 2ºT</div>
+          <div class="node-name">Pablo José</div>
+        </div>
+      </div>
+      <div class="turno-header">Separação (turnos)</div>
+      <div class="sub-column">
+        <div class="node almox turno-1" data-group="almox" data-role="Conferente de Separação · 1º Turno" data-name="Allan Baruk" data-reports="Hagta Chagas" data-area="Separação e abastecimento da fábrica — 1º turno">
+          <div class="node-role">Conferente Separação · 1ºT</div>
+          <div class="node-name">Allan Baruk</div>
+        </div>
+        <div class="node almox turno-2" data-group="almox" data-role="Conferente de Separação · 2º Turno" data-name="Kevyn Reis" data-reports="Hagta Chagas" data-area="Separação e abastecimento da fábrica — 2º turno">
+          <div class="node-role">Conferente Separação · 2ºT</div>
+          <div class="node-name">Kevyn Reis</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="area-column" data-area-column="expedicao">
+      <div class="area-header expedicao">Expedição · Logística Industrial</div>
+      <div class="turno-header">Equipe de Expedição</div>
+      <div class="sub-column">
+        <div class="node expedicao adm" data-group="expedicao" data-role="Conferente de Expedição" data-name="Ygor Barca" data-reports="Antônio Coelho" data-area="Transferências CD, carregamentos e requisições — ADM">
+          <div class="node-role">Conferente Expedição · ADM</div>
+          <div class="node-name">Ygor Barca</div>
+        </div>
+        <div class="node expedicao adm" data-group="expedicao" data-role="Conferente de Expedição" data-name="Nilson Panizzi" data-reports="Antônio Coelho" data-area="Conferência, carregamentos, transferências e apoio operacional à expedição — ADM">
+          <div class="node-role">Conferente Expedição · ADM</div>
+          <div class="node-name">Nilson Panizzi</div>
+        </div>
+        <div class="node expedicao turno-2" data-group="expedicao" data-role="Conferente de Expedição · Horário deslocado / 2º Turno" data-name="Adenilson Costa" data-reports="Antônio Coelho" data-area="Transferências CD, carregamentos e requisições — horário deslocado, apoio ao 2º turno">
+          <div class="node-role">Conferente Expedição · 2ºT</div>
+          <div class="node-name">Adenilson Costa</div>
+        </div>      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">18</div>
+    <div class="stat-label">Colaboradores totais</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Suportes diretos · Anderson</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Áreas integradas</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Turnos operacionais</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">13</div>
+    <div class="stat-label">Cargos distintos</div>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="ctrl-label">Legenda:</span>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--brown);"></span>Liderança</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#378ADD;"></span>PCP</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#639922;"></span>Almoxarifado</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#BA7517;"></span>Expedição</div>
+  <div class="legend-item" style="margin-left:16px;"><span class="legend-dot" style="background:var(--blue);width:3px;height:12px;"></span>1º Turno</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--amber);width:3px;height:12px;"></span>2º Turno</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--purple);width:3px;height:12px;"></span>3º Turno</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--text-muted);width:3px;height:12px;"></span>ADM</div>
+  <div class="legend-item" style="margin-left:16px;"><span class="legend-dot" style="background:var(--accent);"></span>Transversal</div>
+</div>
+
+</div><!-- fim mt-organograma -->
+
+<!-- ========================================= -->
+<!-- ABA 2: DESCRIÇÃO DE CARGOS                -->
+<!-- ========================================= -->
+<div class="main-tab-content" id="mt-cargos">
+
+  <div class="cargos-controls">
+    <span class="ctrl-label">Filtrar por área:</span>
+    <button class="cargo-filter active" data-cf="all">Todos os cargos</button>
+    <button class="cargo-filter" data-cf="lideranca">Liderança</button>
+    <button class="cargo-filter" data-cf="pcp">PCP</button>
+    <button class="cargo-filter" data-cf="almox">Almoxarifado</button>
+    <button class="cargo-filter" data-cf="expedicao">Expedição</button>
+  </div>
+
+  <div class="cargos-container">
+
+    <!-- ══ LIDERANÇA ══════════════════════════════════════════ -->
+    <div class="cargo-section" data-cs="lideranca">
+      <div class="cargo-section-label">Liderança</div>
+
+      <!-- 1. SUPERVISOR PCP E LOGÍSTICA INDUSTRIAL -->
+      <div class="cargo-card c-leader">
+        <div class="cargo-head">
+          <div class="cargo-tag">Supervisão</div>
+          <h3 class="cargo-title">Supervisor de PCP e Logística Industrial</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Gerente Industrial &nbsp;·&nbsp; <strong>Setor:</strong> PCP e Logística Industrial</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Coordenar a cadeia interna integrada de PCP, Almoxarifado e Expedição, garantindo o cumprimento do plano de produção, a acuracidade dos estoques e o nível de serviço esperado pela Gerência Industrial e pela Diretoria.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Conduzir o processo de S&amp;OP e sustentar a interface com a Diretoria e a Gerência Industrial</li>
+              <li>Garantir a aderência do plano de produção vs realizado e a entrega dos indicadores da área</li>
+              <li>Desenvolver os suportes diretos (Analista de PCP, Assistentes de PCP e de Estoque, Supervisor de Expedição)</li>
+              <li>Acompanhar indicadores e conduzir planos de ação para desvios</li>
+              <li>Representar a área em comitês industriais e projetos transversais</li>
+              <li>Garantir conformidade das operações com BPF, segurança do alimento e normas regulatórias</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino superior completo em Engenharia de Produção, Administração, Logística ou áreas afins. Experiência mínima de 3 anos em liderança de PCP, Almoxarifado ou Logística em indústria — preferencialmente alimentícia.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Coordenador de Supply Chain · Gerente Industrial</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>S&amp;OP, MRP, gestão de materiais e política de estoque</li>
+                <li>Leitura e análise de indicadores industriais (KPIs)</li>
+                <li>Sankhya, WMS, Excel avançado e Power BI</li>
+                <li>Metodologias de melhoria contínua (PDCA, Kaizen)</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Liderança e desenvolvimento de pessoas</li>
+                <li>Visão estratégica e tomada de decisão</li>
+                <li>Comunicação com diferentes níveis hierárquicos</li>
+                <li>Gestão de conflitos e resolução de problemas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Segurança do Alimento</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">APPCC</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. SUPERVISOR DE LOGÍSTICA INDUSTRIAL -->
+      <div class="cargo-card c-leader">
+        <div class="cargo-head">
+          <div class="cargo-tag">Supervisão</div>
+          <h3 class="cargo-title">Supervisor de Logística Industrial</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Gerente Industrial &nbsp;·&nbsp; <strong>Setor:</strong> Expedição</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Liderar as operações da expedição da fábrica, garantindo o atendimento das transferências para o CD, carregamentos de marca própria, recebimento de devoluções e atendimento de requisições internas.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Coordenar diariamente a equipe de expedição (conferentes e auxiliar)</li>
+              <li>Garantir cumprimento de horários de transferência para o CD</li>
+              <li>Supervisionar carregamentos de marca própria, devoluções e requisições de lojas</li>
+              <li>Acompanhar indicadores de nível de atendimento, ocorrências e shelf life</li>
+              <li>Integrar com o PCP para alinhamento de programação e disponibilidade</li>
+              <li>Garantir conformidade fiscal e documentação dos carregamentos</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino superior (cursando ou completo) em Logística, Administração ou áreas afins. Experiência mínima de 2 anos em liderança de expedição ou operações logísticas.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Supervisor de PCP e Logística Industrial</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Gestão de expedição, transferências e carregamentos</li>
+                <li>WMS e sistemas de gestão de estoque</li>
+                <li>Emissão e controle de documentação fiscal</li>
+                <li>Excel intermediário e leitura de indicadores</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Liderança operacional e desenvolvimento da equipe</li>
+                <li>Gestão de prazos e foco em resultados</li>
+                <li>Comunicação clara com PCP e Comercial</li>
+                <li>Controle emocional em situações de pressão</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Segurança do Alimento</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Documentação Fiscal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRANSVERSAL ══════════════════════════════════════ -->
+    <div class="cargo-section" data-cs="pcp almox">
+      <div class="cargo-section-label">Transversal — PCP ↔ Almoxarifado</div>
+
+      <!-- 3. ANALISTA DE PCP -->
+      <div class="cargo-card c-bridge">
+        <div class="cargo-head">
+          <div class="cargo-tag">Analítico</div>
+          <h3 class="cargo-title">Analista de PCP</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Supervisor de PCP e Logística Industrial &nbsp;·&nbsp; <strong>Setor:</strong> PCP / Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Atuar nas duas pontas da cadeia — Gestão de Materiais (PCP) e Controle de Estoque (Almoxarifado) — garantindo que o planejamento de materiais tenha base consistente no estoque real e que as políticas de estoque sejam seguidas.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Conduzir a gestão de materiais (críticos, compras diretas, política de estoque)</li>
+              <li>Acompanhar acuracidade de estoque e ações corretivas junto ao Almoxarifado</li>
+              <li>Estruturar e documentar processos e POPs das áreas</li>
+              <li>Apoiar o S&amp;OP com análises de cobertura, ruptura e inventário</li>
+              <li>Desenvolver e manter painéis de indicadores da área</li>
+              <li>Atuar como referência técnica para os Assistentes de PCP e de Estoque</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino superior (cursando ou completo) em Engenharia de Produção, Administração, Logística ou áreas afins. Experiência mínima de 2 anos em PCP, gestão de materiais ou controle de estoque.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Supervisor de PCP e Logística Industrial</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>MRP, política de estoque e gestão de materiais críticos</li>
+                <li>Sankhya, WMS e Excel avançado</li>
+                <li>Análise de indicadores (WMAPE, cobertura, ruptura)</li>
+                <li>Documentação de processos e criação de POPs</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Pensamento analítico e atenção ao detalhe</li>
+                <li>Organização e priorização de demandas</li>
+                <li>Capacidade de influenciar sem autoridade direta</li>
+                <li>Proatividade na identificação de problemas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">S&amp;OP</span>
+              <span class="ficha-chip">MRP</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PCP ══════════════════════════════════════════════ -->
+    <div class="cargo-section" data-cs="pcp">
+      <div class="cargo-section-label">PCP — Controle de Produção</div>
+
+      <!-- 4. ASSISTENTE DE PCP · ADM -->
+      <div class="cargo-card c-pcp">
+        <div class="cargo-head">
+          <div class="cargo-tag">Assistente ADM</div>
+          <h3 class="cargo-title">Assistente de PCP · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Supervisor de PCP e Logística Industrial &nbsp;·&nbsp; <strong>Setor:</strong> PCP</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Executar a programação e o controle diário da produção, traduzindo o plano semanal em ordens de produção viáveis e acompanhando a execução no chão de fábrica.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Programar a produção diária e semanal com base no S&amp;OP</li>
+              <li>Gerar e acompanhar o cumprimento das ordens de produção</li>
+              <li>Controlar P.I's (produtos intermediários) e ajustar a programação por desvios</li>
+              <li>Emitir relatórios de produção para a Gerência e Diretoria</li>
+              <li>Coordenar os Assistentes de PCP por turno (handover e alinhamento)</li>
+              <li>Tratar exceções e imprevistos na programação diária</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo (desejável superior cursando em Administração, Logística ou Engenharia). Experiência mínima de 1 ano em PCP ou funções similares em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Analista de PCP</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Programação de produção e geração de ordens</li>
+                <li>Sankhya, Excel intermediário</li>
+                <li>Leitura de capacidade produtiva e apontamentos</li>
+                <li>Análise básica de indicadores de produção</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Organização e disciplina na rotina</li>
+                <li>Comunicação clara com produção e supervisores</li>
+                <li>Foco em prazos e entregas</li>
+                <li>Capacidade de lidar com múltiplas demandas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Programação de Produção</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. ASSISTENTE DE PCP · TURNOS -->
+      <div class="cargo-card c-pcp">
+        <div class="cargo-head">
+          <div class="cargo-tag">Assistente · Turnos</div>
+          <h3 class="cargo-title">Assistente de PCP · 1º / 2º / 3º Turno</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de PCP (ADM) &nbsp;·&nbsp; <strong>Setor:</strong> PCP</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Garantir a continuidade do controle de produção durante cada turno, registrando apontamentos, acompanhando o ritmo da produção e comunicando desvios em tempo real.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Realizar apontamentos de produção (PA e PI) com acuracidade</li>
+              <li>Emitir o relatório hora/hora e reportar desvios ao supervisor do turno</li>
+              <li>Garantir registro correto de consumo extra e retalho</li>
+              <li>Apoiar a execução das ordens de produção programadas</li>
+              <li>Executar handover estruturado entre turnos</li>
+              <li>Identificar e reportar gargalos e paradas não planejadas</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 6 meses em apontamento de produção ou funções operacionais em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Assistente de PCP (ADM)</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Apontamento de produção no Sankhya</li>
+                <li>Geração de relatórios hora/hora</li>
+                <li>Excel básico e leitura de programação</li>
+                <li>Interpretação de ordens de produção</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Atenção ao detalhe e precisão</li>
+                <li>Comunicação objetiva no turno</li>
+                <li>Responsabilidade e pontualidade</li>
+                <li>Adaptação a ritmo acelerado de produção</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Apontamento de Produção</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. APRENDIZ DE PCP -->
+      <div class="cargo-card c-pcp">
+        <div class="cargo-head">
+          <div class="cargo-tag">Formação</div>
+          <h3 class="cargo-title">Aprendiz de PCP</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de PCP (ADM) &nbsp;·&nbsp; <strong>Setor:</strong> PCP</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Aprender as rotinas e ferramentas do PCP por meio da prática acompanhada, apoiando o time em atividades operacionais e se preparando para assumir funções futuras na área.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Apoiar atividades operacionais do PCP sob supervisão</li>
+              <li>Aprender o uso dos sistemas (Sankhya, Excel, relatórios)</li>
+              <li>Apoiar apontamentos, relatórios e organização de dados</li>
+              <li>Participar de reuniões e treinamentos da área</li>
+              <li>Cumprir o plano de desenvolvimento pactuado com o supervisor</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Matriculado em programa Jovem Aprendiz. Cursando ensino médio ou técnico em área administrativa, logística ou afins. Sem exigência de experiência prévia.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Assistente de PCP (Turno)</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Informática básica (pacote Office)</li>
+                <li>Disposição para aprender sistemas industriais</li>
+                <li>Raciocínio lógico e interpretação de dados</li>
+                <li>Organização de arquivos e registros</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Vontade de aprender e receber feedback</li>
+                <li>Comprometimento com o plano de desenvolvimento</li>
+                <li>Pontualidade e responsabilidade</li>
+                <li>Postura colaborativa</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">Integração</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Segurança do Trabalho</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALMOXARIFADO ══════════════════════════════════════ -->
+    <div class="cargo-section" data-cs="almox">
+      <div class="cargo-section-label">Almoxarifado — Controle de Estoque</div>
+
+      <!-- 7. ASSISTENTE DE ESTOQUE -->
+      <div class="cargo-card c-almox">
+        <div class="cargo-head">
+          <div class="cargo-tag">Assistente ADM</div>
+          <h3 class="cargo-title">Assistente de Estoque · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Supervisor de PCP · Acompanhamento técnico: Analista de PCP &nbsp;·&nbsp; <strong>Setor:</strong> Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Garantir a acuracidade dos estoques de matéria-prima, material de embalagem e produto acabado, supervisionando as operações de apontamento, separação, organização e controle de inventário.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Coordenar inventário rotativo e ações corretivas de acuracidade</li>
+              <li>Supervisionar conferentes de apontamento, separação e organização</li>
+              <li>Gerenciar o WMS e a integridade das movimentações</li>
+              <li>Controlar e reportar consumo extra e BPF do box de produção</li>
+              <li>Ser o primeiro ponto de escalonamento da operação do almoxarifado</li>
+              <li>Consolidar indicadores do almox para o Supervisor</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo (desejável superior cursando em Logística, Administração ou áreas afins). Experiência mínima de 2 anos em almoxarifado ou controle de estoque em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Analista de PCP</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>WMS, Sankhya e controle de inventário</li>
+                <li>Gestão de acuracidade e FEFO</li>
+                <li>Excel intermediário e relatórios de estoque</li>
+                <li>Análise de divergências e causa raiz</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Liderança de equipe operacional</li>
+                <li>Organização e disciplina na rotina</li>
+                <li>Capacidade de cobrar resultado sem centralizar</li>
+                <li>Proatividade na investigação de problemas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">FEFO</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Inventário Rotativo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. CONFERENTE DE RECEBIMENTO -->
+      <div class="cargo-card c-almox">
+        <div class="cargo-head">
+          <div class="cargo-tag">Recebimento</div>
+          <h3 class="cargo-title">Conferente de Recebimento · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de Estoque &nbsp;·&nbsp; <strong>Setor:</strong> Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Receber e conferir todos os materiais que entram na fábrica, garantindo que quantidade, qualidade e documentação estejam de acordo com o pedido de compra e as normas de segurança do alimento.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Agendar e conferir recebimentos (NF x pedido x físico)</li>
+              <li>Registrar entradas no WMS e sistema corporativo</li>
+              <li>Tratar divergências e acionar Compras e Qualidade quando necessário</li>
+              <li>Garantir rastreabilidade e controle de lotes e validades</li>
+              <li>Reportar lead time de recebimento e ocorrências</li>
+              <li>Manter organização do box de recebimento e conformidade BPF</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 1 ano em recebimento de materiais, conferência ou almoxarifado em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Assistente de Estoque</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Leitura e conferência de notas fiscais</li>
+                <li>Sankhya, WMS e Excel básico</li>
+                <li>Controle de lotes, validades e rastreabilidade</li>
+                <li>Inspeção visual de materiais</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Atenção ao detalhe e precisão</li>
+                <li>Comunicação clara com fornecedores e áreas internas</li>
+                <li>Postura firme na tratativa de divergências</li>
+                <li>Organização no fluxo de documentos</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Conferência de NF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. CONFERENTE DE ORGANIZAÇÃO -->
+      <div class="cargo-card c-almox">
+        <div class="cargo-head">
+          <div class="cargo-tag">Organização</div>
+          <h3 class="cargo-title">Conferente de Organização · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de Estoque &nbsp;·&nbsp; <strong>Setor:</strong> Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Manter o almoxarifado organizado, com endereçamento correto e respeitando as restrições de armazenagem, garantindo rapidez na separação e integridade dos materiais.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Organizar os estoques respeitando BPF, FEFO e restrições (alergênicos, inflamáveis)</li>
+              <li>Tratar devoluções de materiais e reintegrar ao estoque</li>
+              <li>Manter endereçamento correto no WMS</li>
+              <li>Apoiar inventário rotativo e auditorias visuais</li>
+              <li>Controlar ocupação e otimizar espaço de armazenagem</li>
+              <li>Identificar e reportar riscos de contaminação cruzada</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 1 ano em almoxarifado ou organização de estoques em indústria alimentícia ou similar.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Conferente de Recebimento · Assistente de Estoque</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Endereçamento WMS e rastreabilidade</li>
+                <li>FEFO, FIFO e controle de validades</li>
+                <li>Leitura de layout e otimização de espaço</li>
+                <li>Sankhya e Excel básico</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Disciplina e organização</li>
+                <li>Atenção ao detalhe e visão sistêmica</li>
+                <li>Proatividade na identificação de riscos</li>
+                <li>Colaboração com separadores e apontadores</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">FEFO</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Empilhadeira</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. CONFERENTE DE APONTAMENTO -->
+      <div class="cargo-card c-almox">
+        <div class="cargo-head">
+          <div class="cargo-tag">Apontamento · Turnos</div>
+          <h3 class="cargo-title">Conferente de Apontamento · 1º / 2º Turno</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de Estoque &nbsp;·&nbsp; <strong>Setor:</strong> Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Registrar com precisão todas as movimentações de produto acabado e produto intermediário no WMS, garantindo que o sistema reflita fielmente o que foi produzido no turno.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Apontar PA e PI no WMS no ritmo da produção</li>
+              <li>Gerar requisições de materiais para as ordens de produção</li>
+              <li>Conferir materiais separados antes do abastecimento da fábrica</li>
+              <li>Validar etiquetas e pré-mix</li>
+              <li>Registrar e comunicar divergências encontradas</li>
+              <li>Apoiar o handover entre turnos</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 6 meses em almoxarifado, apontamento ou conferência em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Conferente de Organização · Assistente de Estoque</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>WMS e apontamento via coletor</li>
+                <li>Leitura de ordens de produção</li>
+                <li>Conferência de quantidade, lote e código</li>
+                <li>Sankhya e Excel básico</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Precisão e atenção ao detalhe</li>
+                <li>Agilidade no ritmo de produção</li>
+                <li>Comunicação objetiva com a linha</li>
+                <li>Compromisso com a acuracidade</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Coletor de Dados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. CONFERENTE DE SEPARAÇÃO -->
+      <div class="cargo-card c-almox">
+        <div class="cargo-head">
+          <div class="cargo-tag">Separação · Turnos</div>
+          <h3 class="cargo-title">Conferente de Separação · 1º / 2º Turno</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Assistente de Estoque &nbsp;·&nbsp; <strong>Setor:</strong> Almoxarifado</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Separar e abastecer a fábrica com materiais no prazo e quantidade corretos, seguindo o coletor e respeitando a programação de produção do turno.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Fazer a ronda física antes de cada separação</li>
+              <li>Separar materiais via coletor (código, lote, quantidade, endereço)</li>
+              <li>Entregar os materiais à fábrica antes do início de cada turno</li>
+              <li>Atender requisições emergenciais de M.P e M.E</li>
+              <li>Registrar desvios e comunicar antes de abandonar a tarefa</li>
+              <li>Apoiar a organização do box de materiais</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 1 ano em separação de materiais ou almoxarifado. Desejável curso de empilhadeira.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Conferente de Apontamento · Conferente de Organização</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Separação via coletor e leitura de requisições</li>
+                <li>Operação de empilhadeira e paleteira</li>
+                <li>Conhecimento de FEFO e restrições de armazenagem</li>
+                <li>WMS e Sankhya básico</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Agilidade e foco em prazo</li>
+                <li>Disciplina na sequência dos processos</li>
+                <li>Atenção para evitar erros de separação</li>
+                <li>Comunicação ativa com a produção</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">FEFO</span>
+              <span class="ficha-chip">Alergênicos</span>
+              <span class="ficha-chip">Empilhadeira</span>
+              <span class="ficha-chip">Abastecimento de Fábrica</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EXPEDIÇÃO ══════════════════════════════════════════ -->
+    <div class="cargo-section" data-cs="expedicao">
+      <div class="cargo-section-label">Expedição — Logística Industrial</div>
+
+      <!-- 12. CONFERENTE DE EXPEDIÇÃO -->
+      <div class="cargo-card c-expedicao">
+        <div class="cargo-head">
+          <div class="cargo-tag">Conferência</div>
+          <h3 class="cargo-title">Conferente de Expedição · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Supervisor de Logística Industrial &nbsp;·&nbsp; <strong>Setor:</strong> Expedição</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Executar as operações de saída da fábrica — transferências para o CD, carregamentos de marca própria, recebimento de devoluções e atendimento de requisições — garantindo conformidade fiscal e integridade do estoque.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Conferir cargas de transferência para o CD no prazo definido</li>
+              <li>Separar, conferir e carregar pedidos de marca própria</li>
+              <li>Receber e tratar devoluções de clientes e lojas</li>
+              <li>Atender requisições internas de P.A</li>
+              <li>Controlar documentação fiscal e shelf life dos produtos</li>
+              <li>Reportar ocorrências e desvios ao Supervisor</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência mínima de 1 ano em expedição, conferência ou logística em indústria.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Supervisor de Logística Industrial · Assistente de Estoque</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Conferência de cargas e documentação fiscal</li>
+                <li>WMS, Sankhya e emissão de NF</li>
+                <li>Operação de empilhadeira</li>
+                <li>Controle de shelf life e rastreabilidade</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Atenção ao detalhe nos documentos fiscais</li>
+                <li>Organização e cumprimento de prazos</li>
+                <li>Comunicação com motoristas e transportadoras</li>
+                <li>Postura firme na tratativa de divergências</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">WMS</span>
+              <span class="ficha-chip">Sankhya</span>
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Emissão de NF</span>
+              <span class="ficha-chip">Empilhadeira</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. AUXILIAR DE EXPEDIÇÃO -->
+      <div class="cargo-card c-expedicao">
+        <div class="cargo-head">
+          <div class="cargo-tag">Apoio operacional</div>
+          <h3 class="cargo-title">Auxiliar de Expedição · ADM</h3>
+          <div class="cargo-report"><strong>Subordinação:</strong> Supervisor de Logística Industrial &nbsp;·&nbsp; <strong>Setor:</strong> Expedição</div>
+        </div>
+        <div class="cargo-body">
+          <div class="cargo-mission">
+            Dar suporte operacional às rotinas da expedição, garantindo agilidade nos carregamentos, organização do box de expedição e apoio nas transferências e devoluções.
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Responsabilidades principais</div>
+            <ul class="cargo-list">
+              <li>Apoiar carregamentos e transferências para o CD</li>
+              <li>Manter organização e limpeza do box de expedição</li>
+              <li>Apoiar no recebimento de devoluções e tratativas</li>
+              <li>Movimentar pallets e produtos com segurança</li>
+              <li>Reportar qualquer divergência ou ocorrência ao Supervisor</li>
+            </ul>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Perfil requerido</div>
+              <p class="ficha-text">Ensino médio completo. Experiência desejável de 6 meses em expedição ou logística. Curso de empilhadeira é um diferencial.</p>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Próximo nível</div>
+              <p class="ficha-text">Conferente de Expedição</p>
+            </div>
+          </div>
+
+          <div class="ficha-grid">
+            <div class="ficha-section">
+              <div class="ficha-label">Habilidades técnicas</div>
+              <ul class="cargo-list-compact">
+                <li>Operação de empilhadeira e paleteira</li>
+                <li>Organização física de cargas e pallets</li>
+                <li>Identificação de produtos e lotes</li>
+                <li>Noções básicas de WMS</li>
+              </ul>
+            </div>
+            <div class="ficha-section">
+              <div class="ficha-label">Competências comportamentais</div>
+              <ul class="cargo-list-compact">
+                <li>Disposição física e agilidade</li>
+                <li>Atenção às normas de segurança</li>
+                <li>Colaboração com toda a equipe</li>
+                <li>Postura proativa no apoio às rotinas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ficha-section">
+            <div class="ficha-label">Treinamentos obrigatórios</div>
+            <div class="ficha-chips">
+              <span class="ficha-chip">BPF</span>
+              <span class="ficha-chip">Empilhadeira</span>
+              <span class="ficha-chip">Segurança do Trabalho</span>
+              <span class="ficha-chip">Alergênicos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fim cargos-container -->
+
+</div><!-- fim mt-cargos -->
+
+<!-- ========================================= -->
+<!-- ABA 3: DIÁRIOS DE BORDO                   -->
+<!-- ========================================= -->
+<div class="main-tab-content" id="mt-diarios">
+
+  <div class="diarios-controls">
+    <span class="ctrl-label">Filtrar por área:</span>
+    <button class="diario-filter active" data-df="all">Todos</button>
+    <button class="diario-filter" data-df="lideranca">Liderança</button>
+    <button class="diario-filter" data-df="pcp">PCP</button>
+    <button class="diario-filter" data-df="almox">Almoxarifado</button>
+    <button class="diario-filter" data-df="expedicao">Expedição</button>
+    <span class="ctrl-label" style="margin-left:auto;">Clique em um cargo para abrir, criar ou editar o diário</span>
+  </div>
+
+  <details class="supabase-panel">
+    <summary>Configuração online · Supabase <span id="sb-config-resumo">Não configurado</span></summary>
+    <div class="supabase-grid">
+      <div class="supabase-field">
+        <label>Project URL</label>
+        <input id="sb-url" type="text" placeholder="https://xxxx.supabase.co">
+      </div>
+      <div class="supabase-field">
+        <label>Anon public key</label>
+        <input id="sb-key" type="password" placeholder="cole a anon key aqui">
+      </div>
+      <div class="supabase-field">
+        <label>Seu nome</label>
+        <input id="sb-user" type="text" placeholder="ex.: Anderson">
+      </div>
+      <button class="filter-btn" type="button" onclick="saveSupabaseConfig()">Salvar config.</button>
+      <button class="filter-btn" type="button" onclick="testSupabaseConnection()">Testar</button>
+    </div>
+    <div id="sb-status" class="supabase-status">Configure uma vez em cada computador. Use apenas a anon public key, nunca a service_role.</div>
+  </details>
+
+  <div class="diarios-container">
+
+    <!-- Cards de cargo que abrem o diário -->
+    <div class="diario-card-list" id="diario-card-list">
+      <!-- Populado via JS -->
+    </div>
+
+  </div>
+
+</div><!-- fim mt-diarios -->
+
+<div class="modal-backdrop" id="backdrop"></div>
+<div class="modal" id="modal">
+  <button class="modal-close" onclick="closeModal()">×</button>
+  <div class="modal-role" id="m-role"></div>
+  <div class="modal-name" id="m-name"></div>
+  <div class="modal-info">
+    <p style="margin-bottom:8px;"><strong>Reporta a:</strong> <span id="m-reports"></span></p>
+    <p><strong>Responsabilidade:</strong> <span id="m-area"></span></p>
+  </div>
+</div>
+
+<!-- MODAL DO DIÁRIO DE BORDO -->
+<div class="diario-backdrop" id="diario-backdrop"></div>
+<div class="diario-modal" id="diario-modal">
+  <div class="diario-header">
+    <div>
+      <div class="diario-role" id="dm-role"></div>
+      <div class="diario-title" id="dm-title"></div>
+    </div>
+    <div class="diario-actions">
+      <button class="dm-btn dm-btn-online" onclick="saveDiarioOnline()">Salvar online</button>
+      <button class="dm-btn dm-btn-ghost" onclick="loadDiarioOnline()">Carregar online</button>
+      <button class="dm-btn dm-btn-ghost" onclick="exportDiario()">Exportar JSON</button>
+      <button class="dm-btn dm-btn-ghost" onclick="exportDiarioImage()">Exportar imagem</button>
+      <button class="dm-btn dm-btn-ghost" onclick="printDiario()">Imprimir</button>
+      <button class="dm-btn dm-btn-close" onclick="closeDiario()">Fechar</button>
+    </div>
+  </div>
+
+  <div class="diario-body">
+
+    <!-- Toolbar de modo -->
+    <div class="dm-toolbar">
+      <div class="dm-tabs">
+        <button class="dm-tab active" data-dmt="view">Visualizar</button>
+        <button class="dm-tab" data-dmt="edit">Editar</button>
+      </div>
+      <div class="dm-toolbar-info" id="dm-status">
+        <span class="status-dot"></span>
+        <span id="dm-status-text">Carregando...</span>
+      </div>
+    </div>
+
+    <!-- MODO VISUALIZAR -->
+    <div class="dm-mode active" id="dm-view-mode">
+
+      <div class="dm-view-section">
+        <div class="dm-view-label">Missão</div>
+        <div class="dm-view-text" id="dmv-mission">—</div>
+      </div>
+
+      <div class="dm-view-section">
+        <div class="dm-view-label">Atividades diárias</div>
+        <div class="dm-view-grid" id="dmv-daily">
+          <div class="dm-empty">Nenhuma atividade diária cadastrada ainda.</div>
+        </div>
+      </div>
+
+      <div class="dm-view-section">
+        <div class="dm-view-label">Atividades semanais</div>
+        <div class="dm-view-list" id="dmv-weekly">
+          <div class="dm-empty">Nenhuma atividade semanal cadastrada ainda.</div>
+        </div>
+      </div>
+
+      <div class="dm-view-section">
+        <div class="dm-view-label">Checklist diário</div>
+        <div class="dm-checklist" id="dmv-checklist">
+          <div class="dm-empty">Nenhum item no checklist ainda.</div>
+        </div>
+      </div>
+
+      <div class="dm-view-section">
+        <div class="dm-view-label">Observações</div>
+        <div class="dm-view-text" id="dmv-obs">Sem observações registradas.</div>
+      </div>
+
+    </div>
+
+    <!-- MODO EDITAR -->
+    <div class="dm-mode" id="dm-edit-mode">
+
+      <div class="dm-edit-section">
+        <label class="dm-label">Missão / Propósito do cargo</label>
+        <textarea class="dm-input" id="dme-mission" rows="3" placeholder="Descreva a missão do cargo..."></textarea>
+      </div>
+
+      <div class="dm-edit-section">
+        <div class="dm-label-row">
+          <label class="dm-label">Atividades diárias (por horário)</label>
+          <button class="dm-mini-btn" onclick="addDaily()">+ Adicionar</button>
+        </div>
+        <div id="dme-daily" class="dm-rows"></div>
+      </div>
+
+      <div class="dm-edit-section">
+        <div class="dm-label-row">
+          <label class="dm-label">Atividades semanais</label>
+          <button class="dm-mini-btn" onclick="addWeekly()">+ Adicionar</button>
+        </div>
+        <div id="dme-weekly" class="dm-rows"></div>
+      </div>
+
+      <div class="dm-edit-section">
+        <div class="dm-label-row">
+          <label class="dm-label">Checklist diário</label>
+          <button class="dm-mini-btn" onclick="addCheckItem()">+ Adicionar</button>
+        </div>
+        <div id="dme-checklist" class="dm-rows"></div>
+      </div>
+
+      <div class="dm-edit-section">
+        <label class="dm-label">Observações</label>
+        <textarea class="dm-input" id="dme-obs" rows="4" placeholder="Observações gerais, pontos de atenção, rotinas especiais..."></textarea>
+      </div>
+
+      <div class="dm-save-bar">
+        <button class="dm-btn dm-btn-save" onclick="saveDiario()">Salvar alterações</button>
+        <button class="dm-btn dm-btn-ghost" onclick="resetDiario()">Restaurar modelo padrão</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  <div class="ft">Anderson Mota · Barion Alimentos · Organograma PCP e Logística Industrial</div>
+  <div class="ft">Estrutura atual · Revisão 2 · 2026</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══ ABAS PRINCIPAIS ══
+function showMainTab(name){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.main-tab-content').forEach(c=>c.classList.remove('active'));
+  const targetTab = Array.from(document.querySelectorAll('.main-tab')).find(t => (t.getAttribute('onclick') || '').includes("'"+name+"'"));
+  if (targetTab) targetTab.classList.add('active');
+  const content = document.getElementById('mt-'+name);
+  if (content) content.classList.add('active');
+}
+
+// ══ FILTROS DO ORGANOGRAMA ══
+function applyOrgFilter(filter) {
+  // Mostra/oculta os cargos conforme o grupo do nó.
+  // Alexandre, Edimara e Anderson possuem os grupos pcp/almox/expedicao e aparecem em todas as áreas.
+  // Antônio possui apenas expedição e liderança.
+  document.querySelectorAll('.node').forEach(node => {
+    const groups = (node.dataset.group || '').split(/\s+/).filter(Boolean);
+
+    if (filter === 'all') {
+      node.classList.remove('hidden');
+      return;
+    }
+
+    if (groups.includes(filter)) {
+      node.classList.remove('hidden');
+    } else {
+      node.classList.add('hidden');
+    }
+  });
+
+  // Oculta colunas inteiras quando uma área específica é filtrada.
+  // Isso evita que PCP/Almoxarifado/Expedição fiquem com campos vazios na tela.
+  document.querySelectorAll('.area-column').forEach(col => {
+    const area = col.dataset.areaColumn;
+    if (filter === 'all') {
+      col.style.display = 'flex';
+    } else if (filter === 'lideranca') {
+      col.style.display = 'none';
+    } else if (area === filter) {
+      col.style.display = 'flex';
+    } else {
+      col.style.display = 'none';
+    }
+  });
+
+  // Ajusta as linhas conectoras para não desenhar ramificações quando só liderança estiver visível.
+  const areasRow = document.querySelector('.areas-row');
+  if (areasRow) {
+    areasRow.style.display = (filter === 'lideranca') ? 'none' : 'flex';
+  }
+}
+
+document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyOrgFilter(btn.dataset.filter);
+  });
+});
+
+// ══ FILTROS DOS CARGOS ══
+document.querySelectorAll('.cargo-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cargo-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.cf;
+    document.querySelectorAll('.cargo-section').forEach(sec => {
+      if (filter === 'all') {
+        sec.classList.remove('hidden');
+      } else {
+        const groups = (sec.dataset.cs || '').split(' ');
+        if (groups.includes(filter)) {
+          sec.classList.remove('hidden');
+        } else {
+          sec.classList.add('hidden');
+        }
+      }
+    });
+  });
+});
+
+// ══ MODAL DO ORGANOGRAMA ══
+document.querySelectorAll('.node').forEach(node => {
+  node.addEventListener('click', () => {
+    document.getElementById('m-role').textContent = node.dataset.role || '';
+    document.getElementById('m-name').textContent = node.dataset.name || '';
+    document.getElementById('m-reports').textContent = node.dataset.reports || '—';
+    document.getElementById('m-area').textContent = node.dataset.area || '—';
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('backdrop').classList.add('open');
+  });
+});
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('open');
+}
+document.getElementById('backdrop').addEventListener('click', closeModal);
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDiario(); } });
+
+// ═══════════════════════════════════════════════════════════
+// DIÁRIOS DE BORDO POR CARGO
+// ═══════════════════════════════════════════════════════════
+
+// Definição dos 13 cargos com diários padrão
+const CARGOS = [
+  {
+    id: 'sup-pcp', area: 'lideranca', areaLabel: 'Liderança',
+    title: 'Supervisor de PCP e Logística Industrial',
+    sub: 'Coordenação da cadeia interna integrada',
+    defaultData: {
+      mission: 'Coordenar a cadeia interna integrada de PCP, Almoxarifado e Expedição, garantindo cumprimento do plano de produção, acuracidade dos estoques e nível de serviço.',
+      daily: [
+        {time:'08:00-08:15', title:'Abertura do dia', desc:'3 prioridades, checagem do diário, status dos suportes'},
+        {time:'08:15-08:30', title:'Ronda fábrica e depósitos', desc:'Visibilidade do chão de fábrica'},
+        {time:'08:30-09:00', title:'Check com suportes', desc:'João, Lesly, Hagta, Antônio — direcionamento'},
+        {time:'13:30-14:00', title:'OEE', desc:'Reunião com gerência industrial'},
+        {time:'15:30-16:00', title:'RDO', desc:'Reunião com a operação'},
+        {time:'17:00-17:45', title:'Follow de materiais', desc:'Com Lesly — materiais críticos e compras diretas'},
+        {time:'17:45-18:00', title:'Fechamento do dia', desc:'Registro de pendências e entregas'}
+      ],
+      weekly: [
+        {freq:'Segunda', title:'S&OP semanal', desc:'Com diretoria — status de estoque e decisões'},
+        {freq:'Terça', title:'Reunião semanal PCP/L.I', desc:'Time de suportes diretos — resultados e riscos'},
+        {freq:'Quinta', title:'Preparação S&OP', desc:'Dados e apresentação para a sexta'},
+        {freq:'Mensal', title:'1:1 com Edimara', desc:'Revisão estratégica'}
+      ],
+      checklist: [
+        'Verificar indicadores industriais do dia anterior',
+        'Confirmar cumprimento da programação com o João',
+        'Acompanhar status dos materiais críticos com a Lesly',
+        'Validar acuracidade de estoque com a Hagta'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'sup-log', area: 'lideranca', areaLabel: 'Liderança',
+    title: 'Supervisor de Logística Industrial',
+    sub: 'Liderança das operações de expedição',
+    defaultData: {
+      mission: 'Liderar as operações da expedição, garantindo transferências para o CD, carregamentos de marca própria, devoluções e atendimento de requisições.',
+      daily: [
+        {time:'08:00-08:30', title:'Abertura e ronda expedição', desc:'Check de cargas e agendamentos do dia'},
+        {time:'08:30-09:00', title:'Alinhamento com conferentes', desc:'Prioridades do dia e distribuição'},
+        {time:'13:30-14:00', title:'OEE', desc:'Reunião com gerência industrial'},
+        {time:'15:30-16:00', title:'RDO', desc:'Reunião com operação'},
+        {time:'17:00-17:30', title:'Fechamento de cargas', desc:'Validação de carregamentos do dia'}
+      ],
+      weekly: [
+        {freq:'Segunda', title:'Programação semanal de transferências', desc:'Planejamento da semana para o CD'},
+        {freq:'Sexta', title:'Fechamento semanal', desc:'Consolidação de indicadores de expedição'}
+      ],
+      checklist: [
+        'Verificar agenda de cargas do dia',
+        'Confirmar disponibilidade de PA para transferências',
+        'Acompanhar devoluções pendentes',
+        'Validar shelf life dos produtos carregados'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'analista-pcp', area: 'pcp', areaLabel: 'PCP / Almoxarifado',
+    title: 'Analista de PCP',
+    sub: 'Transversal — Gestão de Materiais e Controle de Estoque',
+    defaultData: {
+      mission: 'Atuar nas duas pontas — Gestão de Materiais e Controle de Estoque — garantindo que o planejamento tenha base consistente nos estoques reais.',
+      daily: [
+        {time:'08:00-08:30', title:'Revisão de materiais críticos', desc:'Posição de estoque e rupturas'},
+        {time:'08:30-10:00', title:'Gestão de materiais', desc:'Análise MRP, compras diretas, agendamentos'},
+        {time:'10:00-11:30', title:'Acompanhamento com almoxarifado', desc:'Acuracidade e ações corretivas'},
+        {time:'17:00-17:45', title:'Follow com Anderson', desc:'Materiais críticos e plano semanal'}
+      ],
+      weekly: [
+        {freq:'Segunda', title:'S&OP semanal', desc:'Apoio com Anderson'},
+        {freq:'Terça', title:'Reunião semanal PCP/L.I', desc:'Participação ativa'},
+        {freq:'Quarta', title:'Análise de cobertura', desc:'Dias de cobertura por item crítico'},
+        {freq:'Mensal', title:'Revisão da política de estoque', desc:'Parâmetros S0-S5 e matriz de prioridade'}
+      ],
+      checklist: [
+        'Verificar rupturas iminentes',
+        'Atualizar painel de indicadores PCP',
+        'Acompanhar ações corretivas de acuracidade',
+        'Conferir agendamentos da semana'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'assist-pcp-adm', area: 'pcp', areaLabel: 'PCP',
+    title: 'Assistente de PCP · ADM',
+    sub: 'Programação e controle diário da produção',
+    defaultData: {
+      mission: 'Executar a programação e o controle diário da produção, traduzindo o plano semanal em ordens viáveis.',
+      daily: [
+        {time:'08:00-09:00', title:'Revisão da produção do dia anterior', desc:'Aderência e desvios'},
+        {time:'09:00-10:30', title:'Programação do dia', desc:'Geração de OPs e validação'},
+        {time:'10:30-12:00', title:'Acompanhamento de produção', desc:'Ritmo e ajustes na programação'},
+        {time:'13:30-14:00', title:'Ronda na produção', desc:'Validação física x sistema'},
+        {time:'14:00-16:00', title:'Programação do dia seguinte', desc:'Plano e ajustes'},
+        {time:'16:00-17:30', title:'Relatórios e fechamento', desc:'Consolidação e envio para Anderson'}
+      ],
+      weekly: [
+        {freq:'Segunda', title:'Programação semanal', desc:'Com base no S&OP'},
+        {freq:'Sexta', title:'Fechamento semanal', desc:'Consolidação de aderência e desvios'}
+      ],
+      checklist: [
+        'Enviar programação até o horário definido',
+        'Validar ronda item por item com separadores',
+        'Acompanhar P.I críticos',
+        'Atualizar relatório hora/hora'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'assist-pcp-turno', area: 'pcp', areaLabel: 'PCP',
+    title: 'Assistente de PCP · Turnos',
+    sub: 'Apontamento e controle durante o turno',
+    defaultData: {
+      mission: 'Garantir continuidade do controle de produção durante cada turno, registrando apontamentos e comunicando desvios.',
+      daily: [
+        {time:'Início turno', title:'Handover', desc:'Recebimento de pendências do turno anterior'},
+        {time:'Hora em hora', title:'Apontamento e relatório', desc:'Registro contínuo no Sankhya'},
+        {time:'Meio do turno', title:'Ronda de linha', desc:'Validação física e anotação de desvios'},
+        {time:'Fim turno', title:'Handover + relatório', desc:'Consolidação e passagem para próximo turno'}
+      ],
+      weekly: [],
+      checklist: [
+        'Apontar PA e PI em tempo real',
+        'Registrar paradas e desvios',
+        'Validar consumo extra do turno',
+        'Passar pendências claras no handover'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'aprendiz-pcp', area: 'pcp', areaLabel: 'PCP',
+    title: 'Aprendiz de PCP',
+    sub: 'Formação e apoio ao time de PCP',
+    defaultData: {
+      mission: 'Aprender as rotinas do PCP por meio da prática acompanhada, apoiando o time.',
+      daily: [
+        {time:'08:00-09:00', title:'Apoio ao Assistente ADM', desc:'Preparação de relatórios e planilhas'},
+        {time:'09:00-11:00', title:'Estudo e prática', desc:'Sistemas (Sankhya, Excel) e processos'},
+        {time:'13:30-15:00', title:'Apoio operacional', desc:'Acompanhamento de rondas e apontamentos'},
+        {time:'15:00-17:30', title:'Atividades direcionadas', desc:'Conforme plano de desenvolvimento'}
+      ],
+      weekly: [
+        {freq:'Sexta', title:'1:1 de desenvolvimento', desc:'Revisão semanal com mentor'}
+      ],
+      checklist: [
+        'Cumprir horário e estar presente em reuniões',
+        'Registrar aprendizados do dia',
+        'Praticar uso dos sistemas',
+        'Tirar dúvidas com o mentor'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'assist-estoque', area: 'almox', areaLabel: 'Almoxarifado',
+    title: 'Assistente de Estoque · ADM',
+    sub: 'Supervisão do controle de estoque',
+    defaultData: {
+      mission: 'Garantir a acuracidade dos estoques de MP, ME e PA, supervisionando apontamento, separação, organização e inventário.',
+      daily: [
+        {time:'08:00-08:30', title:'Ronda do almoxarifado', desc:'Validação física e organização'},
+        {time:'08:30-09:30', title:'Acompanhamento WMS', desc:'Divergências e ações corretivas'},
+        {time:'09:30-11:00', title:'Inventário rotativo', desc:'Conforme calendário semanal'},
+        {time:'14:00-15:30', title:'Consumo extra e BPF', desc:'Análise e plano de ação'},
+        {time:'15:30-17:00', title:'Supervisão operacional', desc:'Conferentes e separadores'}
+      ],
+      weekly: [
+        {freq:'Segunda', title:'Inventário rotativo M.P', desc:'Contagem sistemática'},
+        {freq:'Quarta', title:'Inventário rotativo P.A', desc:'Contagem sistemática'},
+        {freq:'Semanal', title:'Relatório BPF box', desc:'Nota e plano de ação'}
+      ],
+      checklist: [
+        'Acompanhar acuracidade do dia',
+        'Validar organização do box de produção',
+        'Checar consumo extra',
+        'Supervisionar conferentes e separadores'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'conf-receb', area: 'almox', areaLabel: 'Almoxarifado',
+    title: 'Conferente de Recebimento · ADM',
+    sub: 'Recebimento e conferência de materiais',
+    defaultData: {
+      mission: 'Receber e conferir materiais, garantindo quantidade, qualidade e documentação conforme pedido.',
+      daily: [
+        {time:'08:00-08:30', title:'Verificação de agendamentos', desc:'Fornecedores programados para o dia'},
+        {time:'08:30-12:00', title:'Recebimento e conferência', desc:'NF x pedido x físico'},
+        {time:'13:30-16:00', title:'Entrada sistêmica', desc:'Registro no WMS e Sankhya'},
+        {time:'16:00-17:30', title:'Tratativas e divergências', desc:'Com compras e qualidade'}
+      ],
+      weekly: [
+        {freq:'Sexta', title:'Fechamento semanal', desc:'Consolidação de lead times e ocorrências'}
+      ],
+      checklist: [
+        'Conferir NF x pedido antes de descarregar',
+        'Validar qualidade visual do material',
+        'Registrar divergências imediatamente',
+        'Manter organização do box de recebimento'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'conf-org', area: 'almox', areaLabel: 'Almoxarifado',
+    title: 'Conferente de Organização · ADM',
+    sub: 'Organização do estoque e devoluções',
+    defaultData: {
+      mission: 'Manter o almoxarifado organizado, com endereçamento correto, respeitando restrições de armazenagem.',
+      daily: [
+        {time:'08:00-09:00', title:'Auditoria visual', desc:'Check de endereçamento e organização'},
+        {time:'09:00-11:30', title:'Tratamento de devoluções', desc:'Reintegração ao estoque'},
+        {time:'13:30-16:00', title:'Remanejamento e otimização', desc:'Ocupação e FEFO'},
+        {time:'16:00-17:30', title:'Apoio a inventário', desc:'Contagem e ajustes'}
+      ],
+      weekly: [
+        {freq:'Quarta', title:'Auditoria completa de endereços', desc:'Validação sistêmica x físico'}
+      ],
+      checklist: [
+        'Validar endereçamento WMS',
+        'Checar FEFO dos materiais próximos do vencimento',
+        'Tratar devoluções do dia',
+        'Manter corredores e áreas livres'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'conf-apont', area: 'almox', areaLabel: 'Almoxarifado',
+    title: 'Conferente de Apontamento · Turnos',
+    sub: 'Apontamento de PA e PI',
+    defaultData: {
+      mission: 'Registrar com precisão todas as movimentações de PA e PI no WMS, refletindo o que foi produzido.',
+      daily: [
+        {time:'Início turno', title:'Handover', desc:'Pendências do turno anterior'},
+        {time:'Hora em hora', title:'Apontamento WMS', desc:'Coletor em tempo real'},
+        {time:'Conforme demanda', title:'Requisição de materiais', desc:'Para ordens de produção'},
+        {time:'Fim turno', title:'Consolidação', desc:'Fechamento e handover'}
+      ],
+      weekly: [],
+      checklist: [
+        'Conferir 3 critérios: código, lote, quantidade',
+        'Validar etiquetas e pré-mix',
+        'Registrar divergências',
+        'Manter ritmo com a produção'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'conf-sep', area: 'almox', areaLabel: 'Almoxarifado',
+    title: 'Conferente de Separação · Turnos',
+    sub: 'Separação e abastecimento da fábrica',
+    defaultData: {
+      mission: 'Separar e abastecer a fábrica com materiais no prazo e quantidade corretos, seguindo o coletor.',
+      daily: [
+        {time:'Início turno', title:'Ronda física', desc:'Conferência do estoque real antes da separação'},
+        {time:'Pré-produção', title:'Separação via coletor', desc:'Código, lote, quantidade, endereço'},
+        {time:'Durante turno', title:'Abastecimento e requisições', desc:'Entregas programadas e emergenciais'},
+        {time:'Fim turno', title:'Organização do box', desc:'Fechamento e limpeza'}
+      ],
+      weekly: [],
+      checklist: [
+        'Fazer ronda antes de cada separação',
+        'Separar via coletor, sem fracionar sem aprovação',
+        'Entregar material antes do início do turno',
+        'Comunicar antes de abandonar tarefa'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'conf-exp', area: 'expedicao', areaLabel: 'Expedição',
+    title: 'Conferente de Expedição · ADM',
+    sub: 'Operações de saída da fábrica',
+    defaultData: {
+      mission: 'Executar operações de saída — transferências, carregamentos, devoluções e requisições — com conformidade fiscal.',
+      daily: [
+        {time:'08:00-09:00', title:'Verificação de agenda', desc:'Cargas e horários do dia'},
+        {time:'09:00-12:00', title:'Separação e conferência de cargas', desc:'Transferências para CD'},
+        {time:'13:30-15:30', title:'Carregamento marca própria', desc:'Conferência e expedição'},
+        {time:'15:30-17:00', title:'Tratamento de devoluções', desc:'Recebimento e análise'},
+        {time:'17:00-17:30', title:'Fechamento documental', desc:'NFs e registros do dia'}
+      ],
+      weekly: [
+        {freq:'Terça/Sexta', title:'Follow compras direto', desc:'Alinhamento com compras'}
+      ],
+      checklist: [
+        'Verificar NF antes do carregamento',
+        'Conferir shelf life dos produtos',
+        'Registrar ocorrências e divergências',
+        'Manter box de expedição organizado'
+      ],
+      obs: ''
+    }
+  },
+  {
+    id: 'aux-exp', area: 'expedicao', areaLabel: 'Expedição',
+    title: 'Auxiliar de Expedição · ADM',
+    sub: 'Apoio operacional à expedição',
+    defaultData: {
+      mission: 'Dar suporte operacional às rotinas da expedição, garantindo agilidade nos carregamentos e organização.',
+      daily: [
+        {time:'08:00-08:30', title:'Preparação do box', desc:'Organização e verificação de equipamentos'},
+        {time:'08:30-12:00', title:'Apoio aos carregamentos', desc:'Movimentação de pallets'},
+        {time:'13:30-16:00', title:'Apoio a devoluções', desc:'Descarga e separação'},
+        {time:'16:00-17:30', title:'Organização do box', desc:'Limpeza e fechamento'}
+      ],
+      weekly: [],
+      checklist: [
+        'Verificar empilhadeira e EPIs',
+        'Apoiar conferentes em carregamentos',
+        'Manter box limpo e organizado',
+        'Reportar ocorrências ao supervisor'
+      ],
+      obs: ''
+    }
+  }
+];
+
+// ═══ RENDER DOS CARDS DA ABA DIÁRIOS ═══
+function renderDiarioCards() {
+  const list = document.getElementById('diario-card-list');
+  list.innerHTML = CARGOS.map(c => {
+    const hasData = localStorage.getItem('diario-' + c.id) !== null;
+    return `
+      <div class="diario-list-card" data-dc-area="${c.area}" onclick="openDiario('${c.id}')">
+        <span class="dlc-area-tag ${c.area}">${c.areaLabel}</span>
+        <div class="dlc-title">${c.title}</div>
+        <div class="dlc-sub">${c.sub}</div>
+        <div class="dlc-footer">
+          <div class="dlc-status"><span class="dlc-status-dot ${hasData?'active':''}"></span>${hasData?'Personalizado':'Modelo padrão'}</div>
+          <div class="dlc-action">Abrir →</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══ FILTROS DA ABA DIÁRIOS ═══
+document.querySelectorAll('.diario-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diario-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.df;
+    document.querySelectorAll('.diario-list-card').forEach(card => {
+      if (f === 'all' || card.dataset.dcArea === f) card.classList.remove('hidden');
+      else card.classList.add('hidden');
+    });
+  });
+});
+
+// ═══ STATE DO DIÁRIO ABERTO ═══
+let currentCargoId = null;
+let currentData = null;
+let unsaved = false;
+
+// ═══ ABRIR DIÁRIO ═══
+function openDiario(cargoId) {
+  const cargo = CARGOS.find(c => c.id === cargoId);
+  if (!cargo) return;
+
+  currentCargoId = cargoId;
+  unsaved = false;
+
+  // Carrega dados salvos ou padrão
+  const saved = localStorage.getItem('diario-' + cargoId);
+  currentData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(cargo.defaultData));
+
+  document.getElementById('dm-role').textContent = cargo.areaLabel;
+  document.getElementById('dm-title').textContent = cargo.title;
+
+  renderView();
+  renderEdit();
+  updateStatus();
+
+  // Reset para modo view
+  document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.dm-tab[data-dmt="view"]').classList.add('active');
+  document.querySelectorAll('.dm-mode').forEach(m => m.classList.remove('active'));
+  document.getElementById('dm-view-mode').classList.add('active');
+
+  document.getElementById('diario-modal').classList.add('open');
+  document.getElementById('diario-backdrop').classList.add('open');
+}
+
+function closeDiario() {
+  if (unsaved && !confirm('Existem alterações não salvas. Deseja fechar mesmo assim?')) return;
+  document.getElementById('diario-modal').classList.remove('open');
+  document.getElementById('diario-backdrop').classList.remove('open');
+  currentCargoId = null;
+  currentData = null;
+  unsaved = false;
+  renderDiarioCards(); // Atualiza status dos cards
+}
+document.getElementById('diario-backdrop').addEventListener('click', closeDiario);
+
+// ═══ TAB VIEW/EDIT ═══
+document.querySelectorAll('.dm-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.dmt;
+    document.querySelectorAll('.dm-mode').forEach(m => m.classList.remove('active'));
+    document.getElementById('dm-' + mode + '-mode').classList.add('active');
+    if (mode === 'view') renderView();
+  });
+});
+
+// ═══ RENDER MODO VIEW ═══
+function renderView() {
+  if (!currentData) return;
+
+  document.getElementById('dmv-mission').textContent = currentData.mission || '—';
+
+  const dailyEl = document.getElementById('dmv-daily');
+  if (!currentData.daily || currentData.daily.length === 0) {
+    dailyEl.innerHTML = '<div class="dm-empty">Nenhuma atividade diária cadastrada ainda.</div>';
+  } else {
+    dailyEl.innerHTML = currentData.daily.map(d => `
+      <div class="dm-view-row">
+        <div class="dm-view-time">${escapeHtml(d.time||'')}</div>
+        <div class="dm-view-activity">
+          <div class="dm-view-activity-title">${escapeHtml(d.title||'')}</div>
+          ${d.desc?`<div class="dm-view-activity-desc">${escapeHtml(d.desc)}</div>`:''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const weeklyEl = document.getElementById('dmv-weekly');
+  if (!currentData.weekly || currentData.weekly.length === 0) {
+    weeklyEl.innerHTML = '<div class="dm-empty">Nenhuma atividade semanal cadastrada ainda.</div>';
+  } else {
+    weeklyEl.innerHTML = currentData.weekly.map(w => `
+      <div class="dm-view-item">
+        <span class="dm-view-freq">${escapeHtml(w.freq||'')}</span>
+        <div class="dm-view-activity">
+          <div class="dm-view-activity-title">${escapeHtml(w.title||'')}</div>
+          ${w.desc?`<div class="dm-view-activity-desc">${escapeHtml(w.desc)}</div>`:''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const checklistEl = document.getElementById('dmv-checklist');
+  if (!currentData.checklist || currentData.checklist.length === 0) {
+    checklistEl.innerHTML = '<div class="dm-empty">Nenhum item no checklist ainda.</div>';
+  } else {
+    // Carrega estado de checked do localStorage
+    const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString();
+    const checkedState = JSON.parse(localStorage.getItem(checkedKey) || '[]');
+    checklistEl.innerHTML = currentData.checklist.map((item, idx) => {
+      const isChecked = checkedState.includes(idx);
+      return `
+        <div class="dm-check-item ${isChecked?'done':''}">
+          <div class="dm-check-box ${isChecked?'checked':''}" onclick="toggleCheck(${idx})"></div>
+          <div class="dm-check-label">${escapeHtml(item)}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('dmv-obs').textContent = currentData.obs || 'Sem observações registradas.';
+}
+
+function toggleCheck(idx) {
+  const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString();
+  const checkedState = JSON.parse(localStorage.getItem(checkedKey) || '[]');
+  const pos = checkedState.indexOf(idx);
+  if (pos > -1) checkedState.splice(pos, 1);
+  else checkedState.push(idx);
+  localStorage.setItem(checkedKey, JSON.stringify(checkedState));
+  renderView();
+}
+
+// ═══ RENDER MODO EDIT ═══
+function renderEdit() {
+  if (!currentData) return;
+
+  document.getElementById('dme-mission').value = currentData.mission || '';
+  document.getElementById('dme-obs').value = currentData.obs || '';
+
+  renderDailyRows();
+  renderWeeklyRows();
+  renderChecklistRows();
+}
+
+function renderDailyRows() {
+  const container = document.getElementById('dme-daily');
+  container.innerHTML = (currentData.daily||[]).map((d,i)=>`
+    <div class="dm-row">
+      <div class="dm-row-fields">
+        <input type="text" placeholder="Horário" value="${escapeAttr(d.time||'')}" onchange="updateDaily(${i},'time',this.value)">
+        <input type="text" placeholder="Atividade" value="${escapeAttr(d.title||'')}" onchange="updateDaily(${i},'title',this.value)">
+        <input type="text" placeholder="Descrição" value="${escapeAttr(d.desc||'')}" onchange="updateDaily(${i},'desc',this.value)">
+      </div>
+      <button class="dm-row-remove" onclick="removeDaily(${i})" title="Remover">×</button>
+    </div>
+  `).join('');
+}
+
+function renderWeeklyRows() {
+  const container = document.getElementById('dme-weekly');
+  container.innerHTML = (currentData.weekly||[]).map((w,i)=>`
+    <div class="dm-row">
+      <div class="dm-row-fields weekly">
+        <input type="text" placeholder="Frequência" value="${escapeAttr(w.freq||'')}" onchange="updateWeekly(${i},'freq',this.value)">
+        <input type="text" placeholder="Atividade" value="${escapeAttr(w.title||'')}" onchange="updateWeekly(${i},'title',this.value)">
+        <input type="text" placeholder="Descrição" value="${escapeAttr(w.desc||'')}" onchange="updateWeekly(${i},'desc',this.value)">
+      </div>
+      <button class="dm-row-remove" onclick="removeWeekly(${i})" title="Remover">×</button>
+    </div>
+  `).join('');
+}
+
+function renderChecklistRows() {
+  const container = document.getElementById('dme-checklist');
+  container.innerHTML = (currentData.checklist||[]).map((item,i)=>`
+    <div class="dm-row">
+      <div class="dm-row-fields checklist">
+        <input type="text" placeholder="Item do checklist" value="${escapeAttr(item||'')}" onchange="updateCheckItem(${i},this.value)">
+      </div>
+      <button class="dm-row-remove" onclick="removeCheckItem(${i})" title="Remover">×</button>
+    </div>
+  `).join('');
+}
+
+function addDaily() { if(!currentData.daily) currentData.daily=[]; currentData.daily.push({time:'',title:'',desc:''}); renderDailyRows(); markUnsaved(); }
+function addWeekly() { if(!currentData.weekly) currentData.weekly=[]; currentData.weekly.push({freq:'',title:'',desc:''}); renderWeeklyRows(); markUnsaved(); }
+function addCheckItem() { if(!currentData.checklist) currentData.checklist=[]; currentData.checklist.push(''); renderChecklistRows(); markUnsaved(); }
+function updateDaily(i,f,v) { currentData.daily[i][f]=v; markUnsaved(); }
+function updateWeekly(i,f,v) { currentData.weekly[i][f]=v; markUnsaved(); }
+function updateCheckItem(i,v) { currentData.checklist[i]=v; markUnsaved(); }
+function removeDaily(i) { currentData.daily.splice(i,1); renderDailyRows(); markUnsaved(); }
+function removeWeekly(i) { currentData.weekly.splice(i,1); renderWeeklyRows(); markUnsaved(); }
+function removeCheckItem(i) { currentData.checklist.splice(i,1); renderChecklistRows(); markUnsaved(); }
+
+document.getElementById('dme-mission').addEventListener('input', e => { currentData.mission = e.target.value; markUnsaved(); });
+document.getElementById('dme-obs').addEventListener('input', e => { currentData.obs = e.target.value; markUnsaved(); });
+
+function markUnsaved() { unsaved = true; updateStatus(); }
+function updateStatus() {
+  const el = document.getElementById('dm-status');
+  const txt = document.getElementById('dm-status-text');
+  el.classList.remove('saved','unsaved');
+  if (!currentCargoId) { txt.textContent='Carregando...'; return; }
+  const saved = localStorage.getItem('diario-'+currentCargoId);
+  if (unsaved) { el.classList.add('unsaved'); txt.textContent='Alterações não salvas'; }
+  else if (saved) { el.classList.add('saved'); txt.textContent='Salvo · Personalizado'; }
+  else { txt.textContent='Modelo padrão'; }
+}
+
+function saveDiario() {
+  if (!currentCargoId || !currentData) return;
+  localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+  unsaved = false;
+  updateStatus();
+  alert('Diário salvo com sucesso!');
+}
+
+function resetDiario() {
+  if (!confirm('Tem certeza que deseja restaurar o modelo padrão? Todas as alterações personalizadas serão perdidas.')) return;
+  const cargo = CARGOS.find(c => c.id === currentCargoId);
+  if (!cargo) return;
+  localStorage.removeItem('diario-'+currentCargoId);
+  currentData = JSON.parse(JSON.stringify(cargo.defaultData));
+  unsaved = false;
+  renderEdit();
+  renderView();
+  updateStatus();
+}
+
+function exportDiario() {
+  if (!currentCargoId || !currentData) return;
+  const cargo = CARGOS.find(c => c.id === currentCargoId);
+  const data = { cargo: cargo.title, area: cargo.areaLabel, exported: new Date().toISOString(), ...currentData };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'diario-' + currentCargoId + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function printDiario() {
+  // Garante que está em modo view antes de imprimir
+  document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.dm-tab[data-dmt="view"]').classList.add('active');
+  document.querySelectorAll('.dm-mode').forEach(m => m.classList.remove('active'));
+  document.getElementById('dm-view-mode').classList.add('active');
+  renderView();
+  setTimeout(() => window.print(), 200);
+}
+
+
+async function ensureHtml2Canvas() {
+  if (window.html2canvas) return true;
+  alert('Não foi possível carregar a biblioteca de exportação de imagem. Verifique a conexão com a internet ou use a opção de imprimir.');
+  return false;
+}
+
+function getActiveOrgFilterLabel() {
+  const active = document.querySelector('.filter-btn.active[data-filter]');
+  return active ? active.textContent.trim().toLowerCase().replace(/\s+/g,'-') : 'estrutura';
+}
+
+function toggleOnePageOrg(){
+  const org = document.querySelector('#mt-organograma .org-container');
+  const btn = document.getElementById('one-page-btn');
+  if (!org) return;
+  const active = org.classList.toggle('one-page');
+  if (btn) {
+    btn.classList.toggle('active', active);
+    btn.textContent = active ? 'Visual normal' : 'Visual 1 página';
+  }
+}
+
+function ensureOnePageForExport(){
+  const org = document.querySelector('#mt-organograma .org-container');
+  if (org && !org.classList.contains('one-page')) org.classList.add('one-page');
+}
+
+function printFilteredOrg() {
+  const activeTab = document.querySelector('.main-tab.active');
+  if (activeTab) activeTab.classList.remove('active');
+  document.querySelectorAll('.main-tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('mt-organograma').classList.add('active');
+  setTimeout(() => window.print(), 200);
+}
+
+async function exportFilteredOrgImage() {
+  if (!(await ensureHtml2Canvas())) return;
+  const el = document.querySelector('#mt-organograma .org-container');
+  if (!el) return;
+  const canvas = await html2canvas(el, {backgroundColor: '#F7F2EB', scale: 2, useCORS: true});
+  const link = document.createElement('a');
+  link.download = 'organograma-' + getActiveOrgFilterLabel() + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+async function exportDiarioImage() {
+  if (!(await ensureHtml2Canvas())) return;
+  // Garante visualização antes de exportar
+  document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.dm-tab[data-dmt="view"]').classList.add('active');
+  document.querySelectorAll('.dm-mode').forEach(m => m.classList.remove('active'));
+  document.getElementById('dm-view-mode').classList.add('active');
+  renderView();
+  const el = document.querySelector('.diario-modal');
+  const canvas = await html2canvas(el, {backgroundColor: '#F7F2EB', scale: 2, useCORS: true});
+  const link = document.createElement('a');
+  link.download = 'diario-' + (currentCargoId || 'bordo') + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function escapeHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escapeAttr(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+
+// ═══════════════════════════════════════════════════════════
+// SUPABASE · DIÁRIOS COMPARTILHADOS
+// ═══════════════════════════════════════════════════════════
+const SB_TABLE = 'diarios_bordo';
+let sbClient = null;
+function setSbStatus(msg, type='') { const el = document.getElementById('sb-status'); if (!el) return; el.textContent = msg; el.classList.remove('ok','warn'); if (type) el.classList.add(type); }
+function refreshSbConfigUi(){ const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); const urlEl = document.getElementById('sb-url'); const keyEl = document.getElementById('sb-key'); const userEl = document.getElementById('sb-user'); if (urlEl) urlEl.value = cfg.url || ''; if (keyEl) keyEl.value = cfg.key || ''; if (userEl) userEl.value = cfg.user || ''; const resumo = document.getElementById('sb-config-resumo'); if (resumo) resumo.textContent = cfg.url ? 'Configurado' : 'Não configurado'; }
+function getSupabaseClient(){ const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); if (!cfg.url || !cfg.key) { setSbStatus('Supabase não configurado. Abra a configuração online e informe Project URL + anon public key.', 'warn'); return null; } if (!window.supabase) { setSbStatus('Biblioteca Supabase não carregou. Verifique a internet.', 'warn'); return null; } if (!sbClient || sbClient.__url !== cfg.url || sbClient.__key !== cfg.key) { sbClient = window.supabase.createClient(cfg.url, cfg.key); sbClient.__url = cfg.url; sbClient.__key = cfg.key; } return sbClient; }
+function saveSupabaseConfig(){ const url = (document.getElementById('sb-url')?.value || '').trim(); const key = (document.getElementById('sb-key')?.value || '').trim(); const user = (document.getElementById('sb-user')?.value || '').trim(); if (!url || !key) { setSbStatus('Informe o Project URL e a anon public key.', 'warn'); return; } localStorage.setItem('supabase-config', JSON.stringify({url,key,user})); sbClient = null; refreshSbConfigUi(); setSbStatus('Configuração salva neste computador.', 'ok'); }
+async function testSupabaseConnection(){ saveSupabaseConfig(); const client = getSupabaseClient(); if (!client) return; const { error } = await client.from(SB_TABLE).select('id').limit(1); if (error) { setSbStatus('Falha no teste: ' + error.message + ' · confira se a tabela diarios_bordo existe e se as policies foram criadas.', 'warn'); } else { setSbStatus('Conexão OK. O diário já pode ser salvo e carregado online.', 'ok'); } }
+function getTodayKey(){ const d = new Date(); const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function getCheckedStateForCurrent(){ if (!currentCargoId) return []; const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString(); return JSON.parse(localStorage.getItem(checkedKey) || '[]'); }
+function setCheckedStateForCurrent(arr){ if (!currentCargoId) return; const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString(); localStorage.setItem(checkedKey, JSON.stringify(arr || [])); }
+async function saveDiarioOnline(){ if (!currentCargoId || !currentData) return; const client = getSupabaseClient(); if (!client) return; const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); const cargo = CARGOS.find(c => c.id === currentCargoId); const payload = { data_ref: getTodayKey(), cargo_id: currentCargoId, area: cargo?.area || '', area_label: cargo?.areaLabel || '', cargo_titulo: cargo?.title || '', nome_pessoa: cfg.user || '', conteudo: currentData, checklist_estado: getCheckedStateForCurrent(), atualizado_por: cfg.user || 'não informado', atualizado_em: new Date().toISOString() }; const { error } = await client.from(SB_TABLE).upsert(payload, { onConflict: 'data_ref,cargo_id' }); if (error) { setSbStatus('Erro ao salvar online: ' + error.message, 'warn'); alert('Erro ao salvar online: ' + error.message); return; } localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData)); unsaved = false; updateStatus(); setSbStatus('Diário salvo online em ' + new Date().toLocaleString('pt-BR') + '.', 'ok'); alert('Diário salvo online com sucesso!'); }
+async function loadDiarioOnline(){ if (!currentCargoId) return; const client = getSupabaseClient(); if (!client) return; const { data, error } = await client.from(SB_TABLE).select('*').eq('data_ref', getTodayKey()).eq('cargo_id', currentCargoId).maybeSingle(); if (error) { setSbStatus('Erro ao carregar online: ' + error.message, 'warn'); alert('Erro ao carregar online: ' + error.message); return; } if (!data) { setSbStatus('Nenhum diário online encontrado para este cargo na data de hoje.', 'warn'); alert('Nenhum diário online encontrado para este cargo hoje.'); return; } currentData = data.conteudo; setCheckedStateForCurrent(data.checklist_estado || []); localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData)); unsaved = false; renderEdit(); renderView(); updateStatus(); setSbStatus('Diário carregado online. Última atualização por ' + (data.atualizado_por || '—') + '.', 'ok'); }
+refreshSbConfigUi();
+
+// Render inicial
+renderDiarioCards();
+
+</script>
+
+</body>
+</html>
