@@ -2230,10 +2230,10 @@ async function openDiario(cargoId) {
   document.getElementById('diario-modal').classList.add('open');
   document.getElementById('diario-backdrop').classList.add('open');
 
-  const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}');
-  if (cfg.url && cfg.key) {
-    await loadDiarioOnline({silent:true});
-  }
+  // Configuração do Supabase agora é fixa no arquivo.
+  // Ao abrir qualquer diário, tenta carregar automaticamente a versão online
+  // para garantir que alterações feitas em outros dispositivos apareçam.
+  await loadDiarioOnline({silent:true});
 }
 
 async function closeDiario() {
@@ -2413,7 +2413,7 @@ function updateStatus(customText) {
   const saved = localStorage.getItem('diario-'+currentCargoId);
   if (autoSaveInProgress) { el.classList.add('unsaved'); txt.textContent='Salvando online...'; }
   else if (unsaved) { el.classList.add('unsaved'); txt.textContent='Alterações pendentes · auto-save ativo'; }
-  else if (saved) { el.classList.add('saved'); txt.textContent='Salvo online/local · Personalizado'; }
+  else if (saved) { el.classList.add('saved'); txt.textContent='Backup local disponível · carregando online ao abrir'; }
   else { txt.textContent='Modelo padrão'; }
 }
 
