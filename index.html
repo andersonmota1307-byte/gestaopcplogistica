@@ -291,6 +291,7 @@
   .dm-btn-close:hover{background:white;}
   .dm-btn-save{background:var(--accent);color:white;border-color:var(--accent);padding:10px 20px;font-size:13px;}
   .dm-btn-save:hover{background:#9a3f18;}
+  .dm-btn:disabled{opacity:.65;cursor:default;}
 
   .diario-body{flex:1;overflow-y:auto;padding:24px 28px;}
 
@@ -1576,24 +1577,18 @@
   </div>
 
   <details class="supabase-panel">
-    <summary>Configuração online · Supabase <span id="sb-config-resumo">Não configurado</span></summary>
-    <div class="supabase-grid">
-      <div class="supabase-field">
-        <label>Project URL</label>
-        <input id="sb-url" type="text" placeholder="https://xxxx.supabase.co">
-      </div>
-      <div class="supabase-field">
-        <label>Anon public key</label>
-        <input id="sb-key" type="password" placeholder="cole a anon key aqui">
-      </div>
+    <summary>Supabase fixo · Usuário <span id="sb-config-resumo">Conexão fixa</span></summary>
+    <div class="supabase-grid" style="grid-template-columns:1fr auto auto;">
       <div class="supabase-field">
         <label>Seu nome</label>
-        <input id="sb-user" type="text" placeholder="ex.: Anderson">
+        <input id="sb-user" type="text" placeholder="ex.: Anderson, Lesly, Antônio">
       </div>
-      <button class="filter-btn" type="button" onclick="saveSupabaseConfig()">Salvar config.</button>
-      <button class="filter-btn" type="button" onclick="testSupabaseConnection()">Testar</button>
+      <button class="filter-btn" type="button" onclick="saveSupabaseConfig()">Salvar nome</button>
+      <button class="filter-btn" type="button" onclick="testSupabaseConnection()">Testar conexão</button>
+      <input id="sb-url" type="hidden">
+      <input id="sb-key" type="hidden">
     </div>
-    <div id="sb-status" class="supabase-status">Configure uma vez em cada computador. Use apenas a anon public key, nunca a service_role.</div>
+    <div id="sb-status" class="supabase-status">Supabase configurado direto no arquivo. Cada usuário informa apenas o próprio nome.</div>
   </details>
 
   <div class="diarios-container">
@@ -1627,8 +1622,9 @@
       <div class="diario-title" id="dm-title"></div>
     </div>
     <div class="diario-actions">
-      <button class="dm-btn dm-btn-online" onclick="saveDiarioOnline()">Salvar online</button>
-      <button class="dm-btn dm-btn-ghost" onclick="loadDiarioOnline()">Carregar online</button>
+      <button class="dm-btn dm-btn-online" onclick="saveDiarioOnline({manual:true})">Salvar agora</button>
+      <button class="dm-btn dm-btn-ghost" onclick="loadDiarioOnline({manual:true})">Carregar online</button>
+      <button class="dm-btn dm-btn-ghost" type="button" title="O diário salva automaticamente após alterações" disabled>Auto-save ativo</button>
       <button class="dm-btn dm-btn-ghost" onclick="exportDiario()">Exportar JSON</button>
       <button class="dm-btn dm-btn-ghost" onclick="exportDiarioImage()">Exportar imagem</button>
       <button class="dm-btn dm-btn-ghost" onclick="printDiario()">Imprimir</button>
@@ -2209,14 +2205,13 @@ let currentData = null;
 let unsaved = false;
 
 // ═══ ABRIR DIÁRIO ═══
-function openDiario(cargoId) {
+async function openDiario(cargoId) {
   const cargo = CARGOS.find(c => c.id === cargoId);
   if (!cargo) return;
 
   currentCargoId = cargoId;
   unsaved = false;
 
-  // Carrega dados salvos ou padrão
   const saved = localStorage.getItem('diario-' + cargoId);
   currentData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(cargo.defaultData));
 
@@ -2227,7 +2222,6 @@ function openDiario(cargoId) {
   renderEdit();
   updateStatus();
 
-  // Reset para modo view
   document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
   document.querySelector('.dm-tab[data-dmt="view"]').classList.add('active');
   document.querySelectorAll('.dm-mode').forEach(m => m.classList.remove('active'));
@@ -2235,16 +2229,23 @@ function openDiario(cargoId) {
 
   document.getElementById('diario-modal').classList.add('open');
   document.getElementById('diario-backdrop').classList.add('open');
+
+  const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}');
+  if (cfg.url && cfg.key) {
+    await loadDiarioOnline({silent:true});
+  }
 }
 
-function closeDiario() {
-  if (unsaved && !confirm('Existem alterações não salvas. Deseja fechar mesmo assim?')) return;
+async function closeDiario() {
+  if (unsaved) {
+    await flushAutoSave();
+  }
   document.getElementById('diario-modal').classList.remove('open');
   document.getElementById('diario-backdrop').classList.remove('open');
   currentCargoId = null;
   currentData = null;
   unsaved = false;
-  renderDiarioCards(); // Atualiza status dos cards
+  renderDiarioCards();
 }
 document.getElementById('diario-backdrop').addEventListener('click', closeDiario);
 
@@ -2325,6 +2326,7 @@ function toggleCheck(idx) {
   else checkedState.push(idx);
   localStorage.setItem(checkedKey, JSON.stringify(checkedState));
   renderView();
+  markUnsaved();
 }
 
 // ═══ RENDER MODO EDIT ═══
@@ -2344,9 +2346,9 @@ function renderDailyRows() {
   container.innerHTML = (currentData.daily||[]).map((d,i)=>`
     <div class="dm-row">
       <div class="dm-row-fields">
-        <input type="text" placeholder="Horário" value="${escapeAttr(d.time||'')}" onchange="updateDaily(${i},'time',this.value)">
-        <input type="text" placeholder="Atividade" value="${escapeAttr(d.title||'')}" onchange="updateDaily(${i},'title',this.value)">
-        <input type="text" placeholder="Descrição" value="${escapeAttr(d.desc||'')}" onchange="updateDaily(${i},'desc',this.value)">
+        <input type="text" placeholder="Horário" value="${escapeAttr(d.time||'')}" oninput="updateDaily(${i},'time',this.value)">
+        <input type="text" placeholder="Atividade" value="${escapeAttr(d.title||'')}" oninput="updateDaily(${i},'title',this.value)">
+        <input type="text" placeholder="Descrição" value="${escapeAttr(d.desc||'')}" oninput="updateDaily(${i},'desc',this.value)">
       </div>
       <button class="dm-row-remove" onclick="removeDaily(${i})" title="Remover">×</button>
     </div>
@@ -2358,9 +2360,9 @@ function renderWeeklyRows() {
   container.innerHTML = (currentData.weekly||[]).map((w,i)=>`
     <div class="dm-row">
       <div class="dm-row-fields weekly">
-        <input type="text" placeholder="Frequência" value="${escapeAttr(w.freq||'')}" onchange="updateWeekly(${i},'freq',this.value)">
-        <input type="text" placeholder="Atividade" value="${escapeAttr(w.title||'')}" onchange="updateWeekly(${i},'title',this.value)">
-        <input type="text" placeholder="Descrição" value="${escapeAttr(w.desc||'')}" onchange="updateWeekly(${i},'desc',this.value)">
+        <input type="text" placeholder="Frequência" value="${escapeAttr(w.freq||'')}" oninput="updateWeekly(${i},'freq',this.value)">
+        <input type="text" placeholder="Atividade" value="${escapeAttr(w.title||'')}" oninput="updateWeekly(${i},'title',this.value)">
+        <input type="text" placeholder="Descrição" value="${escapeAttr(w.desc||'')}" oninput="updateWeekly(${i},'desc',this.value)">
       </div>
       <button class="dm-row-remove" onclick="removeWeekly(${i})" title="Remover">×</button>
     </div>
@@ -2372,7 +2374,7 @@ function renderChecklistRows() {
   container.innerHTML = (currentData.checklist||[]).map((item,i)=>`
     <div class="dm-row">
       <div class="dm-row-fields checklist">
-        <input type="text" placeholder="Item do checklist" value="${escapeAttr(item||'')}" onchange="updateCheckItem(${i},this.value)">
+        <input type="text" placeholder="Item do checklist" value="${escapeAttr(item||'')}" oninput="updateCheckItem(${i},this.value)">
       </div>
       <button class="dm-row-remove" onclick="removeCheckItem(${i})" title="Remover">×</button>
     </div>
@@ -2392,16 +2394,39 @@ function removeCheckItem(i) { currentData.checklist.splice(i,1); renderChecklist
 document.getElementById('dme-mission').addEventListener('input', e => { currentData.mission = e.target.value; markUnsaved(); });
 document.getElementById('dme-obs').addEventListener('input', e => { currentData.obs = e.target.value; markUnsaved(); });
 
-function markUnsaved() { unsaved = true; updateStatus(); }
-function updateStatus() {
+let autoSaveTimer = null;
+let autoSaveInProgress = false;
+
+function markUnsaved() {
+  unsaved = true;
+  updateStatus('Alteração detectada · salvando em instantes...');
+  scheduleAutoSave();
+}
+
+function updateStatus(customText) {
   const el = document.getElementById('dm-status');
   const txt = document.getElementById('dm-status-text');
+  if (!el || !txt) return;
   el.classList.remove('saved','unsaved');
   if (!currentCargoId) { txt.textContent='Carregando...'; return; }
+  if (customText) { el.classList.add(unsaved ? 'unsaved' : 'saved'); txt.textContent = customText; return; }
   const saved = localStorage.getItem('diario-'+currentCargoId);
-  if (unsaved) { el.classList.add('unsaved'); txt.textContent='Alterações não salvas'; }
-  else if (saved) { el.classList.add('saved'); txt.textContent='Salvo · Personalizado'; }
+  if (autoSaveInProgress) { el.classList.add('unsaved'); txt.textContent='Salvando online...'; }
+  else if (unsaved) { el.classList.add('unsaved'); txt.textContent='Alterações pendentes · auto-save ativo'; }
+  else if (saved) { el.classList.add('saved'); txt.textContent='Salvo online/local · Personalizado'; }
   else { txt.textContent='Modelo padrão'; }
+}
+
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    saveDiarioOnline({silent:true, auto:true});
+  }, 1200);
+}
+
+async function flushAutoSave() {
+  clearTimeout(autoSaveTimer);
+  if (unsaved) await saveDiarioOnline({silent:true, auto:true});
 }
 
 function saveDiario() {
@@ -2525,18 +2550,145 @@ function escapeAttr(str) {
 // SUPABASE · DIÁRIOS COMPARTILHADOS
 // ═══════════════════════════════════════════════════════════
 const SB_TABLE = 'diarios_bordo';
+
+// ═══════════════════════════════════════════════════════════
+// CONFIGURAÇÃO FIXA DO SUPABASE
+// ATENÇÃO: use somente a ANON PUBLIC KEY. Nunca use service_role.
+// Para deixar 100% automático para todos, substitua o texto COLE_AQUI... pela sua anon public key.
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL_FIXO = 'https://oujxxiqvkqjgxobhvrsm.supabase.co';
+const SUPABASE_ANON_KEY_FIXA = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91anh4aXF2a3FqcXhvYmh2cnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDYyMTUsImV4cCI6MjA5Mjk4MjIxNX0.mVnlUOUNJUPqq9upkWmVfv-HkB5z52DxSBgXXW9jhMg';
+
 let sbClient = null;
 function setSbStatus(msg, type='') { const el = document.getElementById('sb-status'); if (!el) return; el.textContent = msg; el.classList.remove('ok','warn'); if (type) el.classList.add(type); }
-function refreshSbConfigUi(){ const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); const urlEl = document.getElementById('sb-url'); const keyEl = document.getElementById('sb-key'); const userEl = document.getElementById('sb-user'); if (urlEl) urlEl.value = cfg.url || ''; if (keyEl) keyEl.value = cfg.key || ''; if (userEl) userEl.value = cfg.user || ''; const resumo = document.getElementById('sb-config-resumo'); if (resumo) resumo.textContent = cfg.url ? 'Configurado' : 'Não configurado'; }
-function getSupabaseClient(){ const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); if (!cfg.url || !cfg.key) { setSbStatus('Supabase não configurado. Abra a configuração online e informe Project URL + anon public key.', 'warn'); return null; } if (!window.supabase) { setSbStatus('Biblioteca Supabase não carregou. Verifique a internet.', 'warn'); return null; } if (!sbClient || sbClient.__url !== cfg.url || sbClient.__key !== cfg.key) { sbClient = window.supabase.createClient(cfg.url, cfg.key); sbClient.__url = cfg.url; sbClient.__key = cfg.key; } return sbClient; }
-function saveSupabaseConfig(){ const url = (document.getElementById('sb-url')?.value || '').trim(); const key = (document.getElementById('sb-key')?.value || '').trim(); const user = (document.getElementById('sb-user')?.value || '').trim(); if (!url || !key) { setSbStatus('Informe o Project URL e a anon public key.', 'warn'); return; } localStorage.setItem('supabase-config', JSON.stringify({url,key,user})); sbClient = null; refreshSbConfigUi(); setSbStatus('Configuração salva neste computador.', 'ok'); }
-async function testSupabaseConnection(){ saveSupabaseConfig(); const client = getSupabaseClient(); if (!client) return; const { error } = await client.from(SB_TABLE).select('id').limit(1); if (error) { setSbStatus('Falha no teste: ' + error.message + ' · confira se a tabela diarios_bordo existe e se as policies foram criadas.', 'warn'); } else { setSbStatus('Conexão OK. O diário já pode ser salvo e carregado online.', 'ok'); } }
+function normalizeSupabaseUrl(url){
+  return (url || '').trim().replace(/\/rest\/v1\/?$/,'').replace(/\/$/,'');
+}
+function getSupabaseFixedConfig(){
+  const user = (localStorage.getItem('supabase-user') || document.getElementById('sb-user')?.value || '').trim();
+  return {
+    url: normalizeSupabaseUrl(SUPABASE_URL_FIXO),
+    key: (SUPABASE_ANON_KEY_FIXA || '').trim(),
+    user
+  };
+}
+function refreshSbConfigUi(){
+  const cfg = getSupabaseFixedConfig();
+  const urlEl = document.getElementById('sb-url');
+  const keyEl = document.getElementById('sb-key');
+  const userEl = document.getElementById('sb-user');
+  if (urlEl) urlEl.value = cfg.url || '';
+  if (keyEl) keyEl.value = cfg.key || '';
+  if (userEl) userEl.value = cfg.user || '';
+  const resumo = document.getElementById('sb-config-resumo');
+  if (resumo) resumo.textContent = cfg.key && !cfg.key.includes('COLE_AQUI') ? 'Conectado no arquivo' : 'Falta anon key no arquivo';
+}
+function getSupabaseClient(){
+  const cfg = getSupabaseFixedConfig();
+  if (!cfg.url || !cfg.key || cfg.key.includes('COLE_AQUI')) {
+    setSbStatus('Falta inserir a anon public key fixa no arquivo HTML. Substitua COLE_AQUI_SUA_ANON_PUBLIC_KEY no código.', 'warn');
+    return null;
+  }
+  if (!window.supabase) { setSbStatus('Biblioteca Supabase não carregou. Verifique a internet.', 'warn'); return null; }
+  if (!sbClient || sbClient.__url !== cfg.url || sbClient.__key !== cfg.key) { sbClient = window.supabase.createClient(cfg.url, cfg.key); sbClient.__url = cfg.url; sbClient.__key = cfg.key; }
+  return sbClient;
+}
+function saveSupabaseConfig(){
+  const user = (document.getElementById('sb-user')?.value || '').trim();
+  localStorage.setItem('supabase-user', user);
+  refreshSbConfigUi();
+  setSbStatus(user ? 'Nome salvo neste navegador. Supabase segue fixo no arquivo.' : 'Supabase fixo no arquivo. Informe o nome do usuário para rastreabilidade.', user ? 'ok' : 'warn');
+  return true;
+}
+async function testSupabaseConnection(){
+  saveSupabaseConfig();
+  const client = getSupabaseClient();
+  if (!client) return;
+  const { error } = await client.from(SB_TABLE).select('id').limit(1);
+  if (error) setSbStatus('Falha no teste: ' + error.message + ' · confira se a tabela diarios_bordo existe e se as policies foram criadas.', 'warn');
+  else setSbStatus('Conexão OK. Auto-save online pronto para uso.', 'ok');
+}
 function getTodayKey(){ const d = new Date(); const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 function getCheckedStateForCurrent(){ if (!currentCargoId) return []; const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString(); return JSON.parse(localStorage.getItem(checkedKey) || '[]'); }
 function setCheckedStateForCurrent(arr){ if (!currentCargoId) return; const checkedKey = 'checked-' + currentCargoId + '-' + new Date().toDateString(); localStorage.setItem(checkedKey, JSON.stringify(arr || [])); }
-async function saveDiarioOnline(){ if (!currentCargoId || !currentData) return; const client = getSupabaseClient(); if (!client) return; const cfg = JSON.parse(localStorage.getItem('supabase-config') || '{}'); const cargo = CARGOS.find(c => c.id === currentCargoId); const payload = { data_ref: getTodayKey(), cargo_id: currentCargoId, area: cargo?.area || '', area_label: cargo?.areaLabel || '', cargo_titulo: cargo?.title || '', nome_pessoa: cfg.user || '', conteudo: currentData, checklist_estado: getCheckedStateForCurrent(), atualizado_por: cfg.user || 'não informado', atualizado_em: new Date().toISOString() }; const { error } = await client.from(SB_TABLE).upsert(payload, { onConflict: 'data_ref,cargo_id' }); if (error) { setSbStatus('Erro ao salvar online: ' + error.message, 'warn'); alert('Erro ao salvar online: ' + error.message); return; } localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData)); unsaved = false; updateStatus(); setSbStatus('Diário salvo online em ' + new Date().toLocaleString('pt-BR') + '.', 'ok'); alert('Diário salvo online com sucesso!'); }
-async function loadDiarioOnline(){ if (!currentCargoId) return; const client = getSupabaseClient(); if (!client) return; const { data, error } = await client.from(SB_TABLE).select('*').eq('data_ref', getTodayKey()).eq('cargo_id', currentCargoId).maybeSingle(); if (error) { setSbStatus('Erro ao carregar online: ' + error.message, 'warn'); alert('Erro ao carregar online: ' + error.message); return; } if (!data) { setSbStatus('Nenhum diário online encontrado para este cargo na data de hoje.', 'warn'); alert('Nenhum diário online encontrado para este cargo hoje.'); return; } currentData = data.conteudo; setCheckedStateForCurrent(data.checklist_estado || []); localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData)); unsaved = false; renderEdit(); renderView(); updateStatus(); setSbStatus('Diário carregado online. Última atualização por ' + (data.atualizado_por || '—') + '.', 'ok'); }
+async function saveDiarioOnline(options = {}){
+  if (!currentCargoId || !currentData) return;
+  const client = getSupabaseClient();
+  if (!client) {
+    localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+    updateStatus('Backup local salvo · configure Supabase para salvar online');
+    return;
+  }
+  const cfg = getSupabaseFixedConfig();
+  const cargo = CARGOS.find(c => c.id === currentCargoId);
+  const payload = {
+    data_ref: getTodayKey(),
+    cargo_id: currentCargoId,
+    area: cargo?.area || '',
+    area_label: cargo?.areaLabel || '',
+    cargo_titulo: cargo?.title || '',
+    nome_pessoa: cfg.user || '',
+    conteudo: currentData,
+    checklist_estado: getCheckedStateForCurrent(),
+    atualizado_por: cfg.user || 'não informado',
+    atualizado_em: new Date().toISOString()
+  };
+  autoSaveInProgress = true;
+  updateStatus('Salvando online...');
+  const { error } = await client.from(SB_TABLE).upsert(payload, { onConflict: 'data_ref,cargo_id' });
+  autoSaveInProgress = false;
+  if (error) {
+    localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+    unsaved = true;
+    updateStatus('Erro no online · backup local salvo');
+    setSbStatus('Erro ao salvar online: ' + error.message, 'warn');
+    if (!options.silent) alert('Erro ao salvar online: ' + error.message);
+    return;
+  }
+  localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+  unsaved = false;
+  updateStatus('Salvo online às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}));
+  setSbStatus('Auto-save: diário salvo online em ' + new Date().toLocaleString('pt-BR') + '.', 'ok');
+  if (options.manual) alert('Diário salvo online com sucesso!');
+}
+async function loadDiarioOnline(options = {}){
+  if (!currentCargoId) return;
+  const client = getSupabaseClient();
+  if (!client) return;
+  updateStatus('Carregando versão online...');
+  const { data, error } = await client.from(SB_TABLE).select('*').eq('data_ref', getTodayKey()).eq('cargo_id', currentCargoId).maybeSingle();
+  if (error) {
+    updateStatus();
+    setSbStatus('Erro ao carregar online: ' + error.message, 'warn');
+    if (!options.silent) alert('Erro ao carregar online: ' + error.message);
+    return;
+  }
+  if (!data) {
+    updateStatus();
+    setSbStatus('Nenhum diário online encontrado para este cargo na data de hoje. Ao editar, o auto-save criará o registro.', 'warn');
+    if (options.manual) alert('Nenhum diário online encontrado para este cargo hoje.');
+    return;
+  }
+  currentData = data.conteudo;
+  setCheckedStateForCurrent(data.checklist_estado || []);
+  localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+  unsaved = false;
+  renderEdit();
+  renderView();
+  updateStatus('Online carregado · atualizado por ' + (data.atualizado_por || '—'));
+  setSbStatus('Diário carregado online. Última atualização por ' + (data.atualizado_por || '—') + '.', 'ok');
+}
 refreshSbConfigUi();
+['sb-url','sb-key','sb-user'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', () => {
+    const user = document.getElementById('sb-user')?.value || '';
+    if (user) saveSupabaseConfig();
+  });
+});
+window.addEventListener('beforeunload', () => {
+  if (unsaved && currentCargoId && currentData) localStorage.setItem('diario-'+currentCargoId, JSON.stringify(currentData));
+});
 
 // Render inicial
 renderDiarioCards();
